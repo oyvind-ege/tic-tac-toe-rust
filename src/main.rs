@@ -82,7 +82,6 @@ impl InputControl {
         match num {
             1 => Ok(Coordinate { x: 0, y: 0 }),
             2 => Ok(Coordinate { x: 1, y: 0 }),
-
             3 => Ok(Coordinate { x: 2, y: 0 }),
             4 => Ok(Coordinate { x: 0, y: 1 }),
             5 => Ok(Coordinate { x: 1, y: 1 }),
@@ -95,15 +94,8 @@ impl InputControl {
     }
 }
 
-trait Render {
-    fn render(&self) {}
-    fn render_help(&self) {}
-}
-
 impl Board {
     pub fn new() -> Board {
-        // 32 = player X
-        // 64 = player Y
         Board {
             rows: vec![vec![0, 0, 0], vec![0, 0, 0], vec![0, 0, 0]],
         }
@@ -112,9 +104,6 @@ impl Board {
     pub fn place(&mut self, coordinate: Coordinate, symbol_to_place: u8) {
         self.rows[coordinate.y][coordinate.x] = symbol_to_place;
     }
-}
-
-impl Render for Board {
     fn render(&self) {
         println!();
         println!("The board currently looks like this:");
