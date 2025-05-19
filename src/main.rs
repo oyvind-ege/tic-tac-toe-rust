@@ -67,7 +67,7 @@ impl Game<'_> {
             match v {
                 val if val == self.board.player_1_encoded => player = self.player_1_name,
                 val if val == self.board.player_2_encoded => player = self.player_2_name,
-                _ => println!("Strange..."),
+                _ => println!("Strange...Game has proclaimed a victor that does no exist."),
             }
             self.board.render(self);
             println!("{} is the victor!", player);
@@ -133,19 +133,6 @@ impl Board {
             .or_else(|| self.has_diagonal_victor())
     }
 
-    fn has_victor(&self, vec: &[u8]) -> Option<u8> {
-        let first = vec.first();
-        first?;
-        if *first.unwrap() == 0 {
-            return None;
-        }
-        if vec.iter().all(|&x| x == *first.unwrap()) {
-            Some(*first.unwrap())
-        } else {
-            None
-        }
-    }
-
     fn has_horizontal_victor(&self) -> Option<u8> {
         for row in &self.rows {
             if let Some(victor) = self.has_victor(row) {
@@ -173,13 +160,44 @@ impl Board {
     }
 
     fn has_diagonal_victor(&self) -> Option<u8> {
-        None
+        let diagonal_1 = self.get_diagonal(1);
+        let diagonal_2 = self.get_diagonal(2);
+
+        self.has_victor(&diagonal_1)
+            .or_else(|| self.has_victor(&diagonal_2))
+    }
+
+    fn has_victor(&self, vec: &[u8]) -> Option<u8> {
+        let first = vec.first();
+        first?;
+        if *first.unwrap() == 0 {
+            return None;
+        }
+        if vec.iter().all(|&x| x == *first.unwrap()) {
+            Some(*first.unwrap())
+        } else {
+            None
+        }
     }
 
     /// Returns a new vector consisting of a "vertical" column in the board
     /// * n represents the column number, from the right
     fn get_vertical(&self, n: usize) -> Vec<u8> {
         self.rows.iter().map(|row| row[n]).collect()
+    }
+
+    fn get_diagonal(&self, n: usize) -> Vec<u8> {
+        self.rows
+            .iter()
+            .enumerate()
+            .map(|(row_index, row)| {
+                let mut column_index = row_index;
+                if n == 2 {
+                    column_index = 2 - row_index;
+                }
+                row[column_index]
+            })
+            .collect()
     }
 
     fn render(&self, game: &Game) {
