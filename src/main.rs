@@ -1,19 +1,20 @@
 use core::error;
 use std::io;
 
-const NUMBER_OF_COLUMNS: usize = 3;
-const X_SYMBOL_CODE: u8 = 32;
-const Y_SYMBOL_CODE: u8 = 64;
-
-struct Game {
+struct Game<'a> {
     board: Board,
     input_controller: InputControl,
     exit_wanted: bool,
+    player_1_name: &'a str,
+    player_2_name: &'a str,
 }
 
 #[derive(Default)]
 struct Board {
     rows: Vec<Vec<u8>>,
+    number_of_columns: usize,
+    player_1_encoded: u8,
+    player_2_encoded: u8,
 }
 
 struct Coordinate {
@@ -29,10 +30,12 @@ enum InputType {
 
 struct InputControl {}
 
-impl Game {
-    pub fn new() -> Game {
+impl Game<'_> {
+    pub fn new<'a>() -> Game<'a> {
         Game {
             board: Board::new(),
+            player_1_name: "X",
+            player_2_name: "Y",
             input_controller: InputControl {},
             exit_wanted: false,
         }
@@ -50,7 +53,8 @@ impl Game {
         match input {
             Some(inp) => match inp {
                 InputType::Help => self.board.render_help(),
-                InputType::Coord(coord) => self.board.place(coord, 32),
+                //TODO: Add support for two players?
+                InputType::Coord(coord) => self.board.place(coord, self.board.player_1_encoded),
                 InputType::Exit => self.exit_wanted = true,
             },
             None => println!("Incorrect input"),
@@ -61,10 +65,11 @@ impl Game {
         if let Some(v) = self.board.check_for_victory() {
             let mut player: &str = "";
             match v {
-                X_SYMBOL_CODE => player = "X",
-                Y_SYMBOL_CODE => player = "Y",
+                val if val == self.board.player_1_encoded => player = self.player_1_name,
+                val if val == self.board.player_2_encoded => player = self.player_2_name,
                 _ => println!("Strange..."),
             }
+            self.board.render(self);
             println!("{} is the victor!", player);
             self.exit_wanted = true;
         }
@@ -111,6 +116,9 @@ impl Board {
     pub fn new() -> Board {
         Board {
             rows: vec![vec![0, 0, 0], vec![0, 0, 0], vec![0, 0, 0]],
+            number_of_columns: 3,
+            player_1_encoded: 32,
+            player_2_encoded: 64,
         }
     }
 
@@ -150,7 +158,7 @@ impl Board {
     fn has_vertical_victor(&self) -> Option<u8> {
         let mut verticals: Vec<Vec<u8>> = vec![vec![], vec![], vec![]];
 
-        for i in 0..NUMBER_OF_COLUMNS {
+        for i in 0..self.number_of_columns {
             verticals.push(self.get_vertical(i));
         }
 
@@ -174,14 +182,14 @@ impl Board {
         self.rows.iter().map(|row| row[n]).collect()
     }
 
-    fn render(&self) {
+    fn render(&self, game: &Game) {
         println!();
         println!("The board currently looks like this:");
         for row in &self.rows {
             for (i, cell) in row.iter().enumerate() {
                 match *cell {
-                    X_SYMBOL_CODE => print!("X"),
-                    Y_SYMBOL_CODE => print!("Y"),
+                    val if val == self.player_1_encoded => print!("{}", game.player_1_name),
+                    val if val == self.player_2_encoded => print!("{}", game.player_2_name),
                     _ => print!(" "),
                 }
                 if i < 2 {
@@ -199,7 +207,7 @@ impl Board {
         println!("This is how you designate the board cells:");
         for (row_index, row) in self.rows.iter().enumerate() {
             for (col_index, _) in row.iter().enumerate() {
-                print!("{}", (row_index * NUMBER_OF_COLUMNS + col_index) + 1);
+                print!("{}", (row_index * self.number_of_columns + col_index) + 1);
                 if col_index < 2 {
                     print!(" | ");
                 }
@@ -217,7 +225,7 @@ fn main() {
     let mut game = Game::new();
 
     while !game.exit_wanted {
-        game.board.render();
+        game.board.render(&game);
         game.handle_input();
         game.check_for_victor();
     }
