@@ -5,16 +5,19 @@ struct Game<'a> {
     board: Board,
     input_controller: InputControl,
     exit_wanted: bool,
-    player_1_name: &'a str,
-    player_2_name: &'a str,
+    player_1: Player<'a>,
+    player_2: Player<'a>,
 }
 
 #[derive(Default)]
 struct Board {
     rows: Vec<Vec<u8>>,
     number_of_columns: usize,
-    player_1_encoded: u8,
-    player_2_encoded: u8,
+}
+
+struct Player<'a> {
+    name: &'a str,
+    encoded: u8,
 }
 
 struct Coordinate {
@@ -34,9 +37,15 @@ impl Game<'_> {
     pub fn new<'a>() -> Game<'a> {
         Game {
             board: Board::new(),
-            player_1_name: "X",
-            player_2_name: "Y",
             input_controller: InputControl {},
+            player_1: Player {
+                name: "X",
+                encoded: 32,
+            },
+            player_2: Player {
+                name: "Y",
+                encoded: 64,
+            },
             exit_wanted: false,
         }
     }
@@ -54,7 +63,7 @@ impl Game<'_> {
             Some(inp) => match inp {
                 InputType::Help => self.board.render_help(),
                 //TODO: Add support for two players?
-                InputType::Coord(coord) => self.board.place(coord, self.board.player_1_encoded),
+                InputType::Coord(coord) => self.board.place(coord, self.player_1.encoded),
                 InputType::Exit => self.exit_wanted = true,
             },
             None => println!("Incorrect input"),
@@ -65,8 +74,8 @@ impl Game<'_> {
         if let Some(v) = self.board.check_for_victory() {
             let mut player: &str = "";
             match v {
-                val if val == self.board.player_1_encoded => player = self.player_1_name,
-                val if val == self.board.player_2_encoded => player = self.player_2_name,
+                val if val == self.player_1.encoded => player = self.player_1.name,
+                val if val == self.player_2.encoded => player = self.player_2.name,
                 _ => println!("Strange...Game has proclaimed a victor that does no exist."),
             }
             self.board.render(self);
@@ -117,8 +126,6 @@ impl Board {
         Board {
             rows: vec![vec![0, 0, 0], vec![0, 0, 0], vec![0, 0, 0]],
             number_of_columns: 3,
-            player_1_encoded: 32,
-            player_2_encoded: 64,
         }
     }
 
@@ -206,8 +213,8 @@ impl Board {
         for row in &self.rows {
             for (i, cell) in row.iter().enumerate() {
                 match *cell {
-                    val if val == self.player_1_encoded => print!("{}", game.player_1_name),
-                    val if val == self.player_2_encoded => print!("{}", game.player_2_name),
+                    val if val == game.player_1.encoded => print!("{}", game.player_1.name),
+                    val if val == game.player_2.encoded => print!("{}", game.player_2.name),
                     _ => print!(" "),
                 }
                 if i < 2 {
