@@ -1,18 +1,12 @@
-use core::error;
-use std::io;
-
+mod board;
+/*
 struct Game<'a> {
+
     board: Board,
     input_controller: InputControl,
     exit_wanted: bool,
     player_1: Player<'a>,
     player_2: Player<'a>,
-}
-
-#[derive(Default)]
-struct Board {
-    rows: Vec<Vec<u8>>,
-    number_of_columns: usize,
 }
 
 struct Player<'a> {
@@ -243,19 +237,13 @@ impl Board {
         println!();
     }
 }
+*/
 
 fn main() {
     println!("Welcome to tic tac toe.");
-
-    let mut game = Game::new();
-
-    while !game.exit_wanted {
-        game.board.render(&game);
-        game.handle_input();
-        game.check_for_victor();
-    }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::Board;
@@ -287,4 +275,4 @@ mod tests {
         b.rows = vec![vec![32, 32, 0], vec![64, 64, 64], vec![64, 2, 0]];
         assert_eq!(b.has_horizontal_victor(), Some(64));
     }
-}
+} */
