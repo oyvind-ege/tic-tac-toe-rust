@@ -5,13 +5,14 @@ pub struct Board {
     width: usize,
 }
 
-const BOARD_STANDARD_SIZE: usize = 3;
+const BOARD_STANDARD_WIDTH: usize = 3;
+const EMPTY_CELL_SYMBOL: u8 = 0;
 
 impl Board {
     pub fn new() -> Board {
         Board {
-            data: vec![0; BOARD_STANDARD_SIZE * BOARD_STANDARD_SIZE],
-            width: BOARD_STANDARD_SIZE,
+            data: vec![EMPTY_CELL_SYMBOL; BOARD_STANDARD_WIDTH * BOARD_STANDARD_WIDTH],
+            width: BOARD_STANDARD_WIDTH,
         }
     }
 
@@ -30,7 +31,7 @@ impl Board {
                     val if val == game.player_2.encoded => print!("{}", game.player_2.name),
                     _ => print!(" "),
                 }
-                if i < 2 {
+                if i < self.width - 1 {
                     print!(" | ");
                 }
             }
@@ -46,7 +47,7 @@ impl Board {
         for (row_index, row) in self.get_all_rows().iter().enumerate() {
             for (col_index, _) in row.iter().enumerate() {
                 print!("{}", (row_index * self.width + col_index));
-                if col_index < 2 {
+                if col_index < self.width - 1 {
                     print!(" | ");
                 }
             }
@@ -95,7 +96,7 @@ impl Board {
     fn has_victor(&self, vec: &[u8]) -> Option<u8> {
         let first = vec.first();
         first?;
-        if *first.unwrap() == 0 {
+        if *first.unwrap() == EMPTY_CELL_SYMBOL {
             return None;
         }
         if vec.iter().all(|&x| x == *first.unwrap()) {
@@ -153,11 +154,11 @@ impl Board {
         if diagonal_num > 1 {
             return vec![];
         }
-        let size_coefficient = self.width - 1;
-        let step = 4 / std::cmp::max(1, size_coefficient * diagonal_num);
+        let board_size_coefficient = self.width - 1;
+        let step = 4 / std::cmp::max(1, board_size_coefficient * diagonal_num);
         self.data
             .iter()
-            .skip(diagonal_num * size_coefficient)
+            .skip(diagonal_num * board_size_coefficient)
             .step_by(step)
             .take(self.width)
             .copied()
