@@ -1,6 +1,5 @@
 mod board;
 use crate::board::Board;
-use std::error;
 use std::io;
 
 struct Game<'a> {
@@ -43,7 +42,7 @@ impl Game<'_> {
 
     pub fn handle_input(&mut self) {
         println!("What do you want to do?");
-        println!("Type a number from 1 to 9 to make your choice.");
+        println!("Type a number from 0 to 8 to make your choice.");
         println!("Type 'help' for assistance on how to designate the board.");
         println!("Type 'exit' to quit.");
         let input = self
@@ -98,7 +97,11 @@ impl InputControl {
 
 fn main() {
     println!("Welcome to tic tac toe.");
-    let game = Game::new();
+    let mut game = Game::new();
 
-    game.board.render(&game);
+    while !game.exit_wanted {
+        game.board.render(&game);
+        game.handle_input();
+        game.check_for_victor();
+    }
 }

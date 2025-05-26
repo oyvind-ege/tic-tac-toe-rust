@@ -23,35 +23,36 @@ impl Board {
     pub fn render(&self, game: &Game) {
         println!();
         println!("The board currently looks like this:");
-        for (i, cell) in self.data.iter().enumerate() {
-            match *cell {
-                val if val == game.player_1.encoded => print!("{}", game.player_1.name),
-                val if val == game.player_2.encoded => print!("{}", game.player_2.name),
-                val => print!("{val}"),
+        for row in &self.get_all_rows() {
+            for (i, cell) in row.iter().enumerate() {
+                match *cell {
+                    val if val == game.player_1.encoded => print!("{}", game.player_1.name),
+                    val if val == game.player_2.encoded => print!("{}", game.player_2.name),
+                    _ => print!(" "),
+                }
+                if i < 2 {
+                    print!(" | ");
+                }
             }
-            if i < 2 || i > 2 && i < 5 || i > 5 && i < 8 {
-                print!(" | ");
-            }
-
-            if i == 2 || i == 5 || i == 8 {
-                println!();
-            }
+            println!();
+            println!("__|___|___");
         }
-        println!("__|___|___");
         println!();
     }
 
     pub fn render_help(&self) {
         println!();
         println!("This is how you designate the board cells:");
-        for (index, _) in self.data.iter().enumerate() {
-            print!("{}", index);
-            if index < 2 {
-                print!(" | ");
+        for (row_index, row) in self.get_all_rows().iter().enumerate() {
+            for (col_index, _) in row.iter().enumerate() {
+                print!("{}", (row_index * self.width + col_index));
+                if col_index < 2 {
+                    print!(" | ");
+                }
             }
+            println!();
+            println!("__|___|___");
         }
-        println!();
-        println!("__|___|___");
         println!();
     }
 
@@ -63,21 +64,17 @@ impl Board {
     }
 
     fn has_horizontal_victor(&self) -> Option<u8> {
-        for offset in 0..self.width {
-            self.has_victor(&self.data[offset..offset + self.width]);
+        for h in self.get_all_rows() {
+            let has_victor = self.has_victor(&h);
+            if has_victor.is_some() {
+                return has_victor;
+            }
         }
         None
     }
 
     fn has_vertical_victor(&self) -> Option<u8> {
-        //TODO: Rewrite. Can be much simpler I am sure.
-        let mut verticals: Vec<Vec<u8>> = vec![vec![], vec![], vec![]];
-
-        for i in 0..self.width {
-            verticals.push(self.get_column(i));
-        }
-
-        for v in verticals {
+        for v in self.get_all_columns() {
             let has_victor = self.has_victor(&v);
             if has_victor.is_some() {
                 return has_victor;
@@ -88,8 +85,8 @@ impl Board {
     }
 
     fn has_diagonal_victor(&self) -> Option<u8> {
-        let diagonal_1 = self.get_diagonal(1);
-        let diagonal_2 = self.get_diagonal(2);
+        let diagonal_1 = self.get_diagonal(0);
+        let diagonal_2 = self.get_diagonal(1);
 
         self.has_victor(&diagonal_1)
             .or_else(|| self.has_victor(&diagonal_2))
@@ -132,7 +129,11 @@ impl Board {
         self.data[start..end].to_vec()
     }
 
-    pub fn get_column(&self, col_num: usize) -> Vec<u8> {
+    fn get_all_rows(&self) -> Vec<Vec<u8>> {
+        (0..self.width).map(|n| self.get_row(n)).collect()
+    }
+
+    fn get_column(&self, col_num: usize) -> Vec<u8> {
         if col_num > self.width - 1 {
             return vec![];
         }
@@ -142,6 +143,10 @@ impl Board {
             .step_by(self.width)
             .copied()
             .collect()
+    }
+
+    fn get_all_columns(&self) -> Vec<Vec<u8>> {
+        (0..self.width).map(|n| self.get_column(n)).collect()
     }
 
     pub fn get_diagonal(&self, diagonal_num: usize) -> Vec<u8> {
