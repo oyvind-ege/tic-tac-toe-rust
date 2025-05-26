@@ -1,6 +1,15 @@
-/* use crate::{Board, Coordinate, Game};
+use crate::InputType;
+use crate::{GameState, PlayerController};
 
-pub struct AIController {}
+impl PlayerController for AI {
+    fn handle_input(&self, gamestate: &GameState) -> Option<InputType> {
+        Some(InputType::Coord(4))
+    }
+}
+
+pub struct AI {}
+
+/*
 
 impl AIController {
     pub fn do_move(&self, game: &Game) -> Coordinate {

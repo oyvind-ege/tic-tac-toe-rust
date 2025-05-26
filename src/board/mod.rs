@@ -1,12 +1,12 @@
-use crate::Game;
+use crate::GameState;
 
 pub struct Board {
     data: Vec<u8>,
     width: usize,
 }
 
+pub const EMPTY_CELL_SYMBOL: u8 = 0;
 const BOARD_STANDARD_WIDTH: usize = 3;
-const EMPTY_CELL_SYMBOL: u8 = 0;
 
 impl Board {
     pub fn new() -> Board {
@@ -21,15 +21,18 @@ impl Board {
         self.data[index] = piece_to_place;
     }
 
-    pub fn render(&self, game: &Game) {
+    pub fn render(&self, game: &GameState) {
         println!();
         println!("The board currently looks like this:");
         for row in &self.get_all_rows() {
             for (i, cell) in row.iter().enumerate() {
-                match *cell {
-                    val if val == game.player_1.encoded => print!("{}", game.player_1.name),
-                    val if val == game.player_2.encoded => print!("{}", game.player_2.name),
-                    _ => print!(" "),
+                for p in &game.players {
+                    if *cell == p.encoded {
+                        print!("{}", p.name);
+                    }
+                }
+                if *cell == EMPTY_CELL_SYMBOL {
+                    print!(" ");
                 }
                 if i < self.width - 1 {
                     print!(" | ");
@@ -57,55 +60,6 @@ impl Board {
         println!();
     }
 
-    /// Return the encoded player symbol if they have won, None if no victor
-    pub fn check_for_victory(&self) -> Option<u8> {
-        self.has_horizontal_victor()
-            .or_else(|| self.has_vertical_victor())
-            .or_else(|| self.has_diagonal_victor())
-    }
-
-    fn has_horizontal_victor(&self) -> Option<u8> {
-        for h in self.get_all_rows() {
-            let has_victor = self.has_victor(&h);
-            if has_victor.is_some() {
-                return has_victor;
-            }
-        }
-        None
-    }
-
-    fn has_vertical_victor(&self) -> Option<u8> {
-        for v in self.get_all_columns() {
-            let has_victor = self.has_victor(&v);
-            if has_victor.is_some() {
-                return has_victor;
-            }
-        }
-
-        None
-    }
-
-    fn has_diagonal_victor(&self) -> Option<u8> {
-        let diagonal_1 = self.get_diagonal(0);
-        let diagonal_2 = self.get_diagonal(1);
-
-        self.has_victor(&diagonal_1)
-            .or_else(|| self.has_victor(&diagonal_2))
-    }
-
-    fn has_victor(&self, vec: &[u8]) -> Option<u8> {
-        let first = vec.first();
-        first?;
-        if *first.unwrap() == EMPTY_CELL_SYMBOL {
-            return None;
-        }
-        if vec.iter().all(|&x| x == *first.unwrap()) {
-            Some(*first.unwrap())
-        } else {
-            None
-        }
-    }
-
     pub fn get_adjacents(&self, cell_number: usize) -> Vec<u8> {
         self.data
             .iter()
@@ -130,7 +84,7 @@ impl Board {
         self.data[start..end].to_vec()
     }
 
-    fn get_all_rows(&self) -> Vec<Vec<u8>> {
+    pub fn get_all_rows(&self) -> Vec<Vec<u8>> {
         (0..self.width).map(|n| self.get_row(n)).collect()
     }
 
@@ -146,7 +100,7 @@ impl Board {
             .collect()
     }
 
-    fn get_all_columns(&self) -> Vec<Vec<u8>> {
+    pub fn get_all_columns(&self) -> Vec<Vec<u8>> {
         (0..self.width).map(|n| self.get_column(n)).collect()
     }
 
