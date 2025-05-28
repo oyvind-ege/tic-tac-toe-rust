@@ -157,7 +157,7 @@ impl Board {
         let mut diagonal_data: Vec<Vec<u8>> = vec![];
         if row == col {
             diagonal_data.push(self.get_diagonal(0))
-        } else if row - col == (self.width - 1) as f32 {
+        } else if row + col == (self.width - 1) as f32 {
             diagonal_data.push(self.get_diagonal(1));
         }
 
