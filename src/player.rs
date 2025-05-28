@@ -1,5 +1,5 @@
-use crate::ai::AI;
-use crate::controllers::*;
+use crate::ai::AIPlayer;
+use crate::controller::*;
 use crate::GameState;
 use std::io;
 
@@ -17,17 +17,17 @@ pub struct Player<'a> {
 
 pub struct LocalPlayer {}
 
-impl Player<'_> {
-    pub fn new(name: &str, encoded: u8, ptype: PlayerType) -> Player {
+impl<'a> Player<'a> {
+    pub fn new(name: &'a str, encoded: u8, ptype: PlayerType) -> Player<'a> {
         Player {
             name,
             encoded,
             controller: match ptype {
                 PlayerType::Local => Box::new(LocalPlayer {}),
-                PlayerType::AI => Box::new(AI {}),
+                PlayerType::AI => Box::new(AIPlayer::new(encoded)),
                 PlayerType::Remote => {
                     println!("Multiplayer not supported.");
-                    Box::new(AI {})
+                    Box::new(AIPlayer::new(encoded))
                 }
             },
         }

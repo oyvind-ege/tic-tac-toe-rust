@@ -1,11 +1,11 @@
 mod ai;
 mod board;
-mod controllers;
+mod controller;
 mod logic;
 mod player;
 
 use crate::board::Board;
-use crate::controllers::*;
+use crate::controller::*;
 use crate::logic::LogicController;
 use crate::player::*;
 
