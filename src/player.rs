@@ -41,21 +41,21 @@ impl InputController for LocalPlayer {
         input.trim().to_string()
     }
 
-    fn parse_input(&self, input: &str) -> Option<InputType> {
+    fn parse_input(&self, input: &str) -> Result<InputType, InputError> {
         match input {
-            val if val == "help" || val == "Help" || val == "HELP" => Some(InputType::Help),
-            val if val == "exit" || val == "Exit" || val == "EXIT" => Some(InputType::Exit),
+            val if val == "help" || val == "Help" || val == "HELP" => Ok(InputType::Help),
+            val if val == "exit" || val == "Exit" || val == "EXIT" => Ok(InputType::Exit),
             val if val.parse::<usize>().is_ok() => {
-                Some(InputType::Coord(val.parse::<usize>().unwrap()))
+                Ok(InputType::Coord(val.parse::<usize>().unwrap()))
             }
 
-            _ => None,
+            _ => Err(InputError::InvalidCommand),
         }
     }
 }
 
 impl PlayerController for LocalPlayer {
-    fn handle_input(&self, _: &GameState) -> Option<InputType> {
+    fn handle_input(&self, _: &GameState) -> Result<InputType, InputError> {
         println!("What do you want to do?");
         println!("Type a number from 0 to 8 to make your choice.");
         println!("Type 'help' for assistance on how to designate the board.");

@@ -10,6 +10,7 @@ pub struct Board {
 pub enum CellState {
     Empty,
     Player(u8),
+    /// Represents an AI scoring value for this particular cell
     AICellValue(u8),
 }
 

@@ -32,15 +32,16 @@ impl GameState<'_> {
     fn process_turn(&mut self) {
         for player in &self.players {
             match player.controller.handle_input(self) {
-                Some(InputType::Help) => {
+                Ok(InputType::Help) => {
                     self.board.render_help();
                 }
-                Some(InputType::Coord(coord)) => self.board.place(coord, player.encoded),
-                Some(InputType::Exit) => {
+                Ok(InputType::Coord(coord)) => self.board.place(coord, player.encoded),
+                Ok(InputType::Exit) => {
                     self.exit_wanted = true;
                 }
-                _ => {
-                    print!("");
+                Ok(_) => print!("Not implemented."),
+                Err(e) => {
+                    print!("{e}");
                 }
             }
         }

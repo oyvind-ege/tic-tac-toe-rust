@@ -1,4 +1,5 @@
 use crate::board::CellState;
+use crate::controller::InputError;
 use crate::InputType;
 use crate::{Board, GameState, PlayerController};
 
@@ -8,8 +9,8 @@ pub struct AIPlayer {
 }
 
 impl PlayerController for AIPlayer {
-    fn handle_input(&self, gamestate: &GameState) -> Option<InputType> {
-        Some(InputType::Coord(4))
+    fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
+        Ok(InputType::Coord(4))
     }
 }
 

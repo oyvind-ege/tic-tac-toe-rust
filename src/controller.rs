@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::GameState;
 
 pub enum InputType {
@@ -7,11 +9,23 @@ pub enum InputType {
     Help,
 }
 
+pub enum InputError {
+    InvalidCommand,
+}
+
+impl Display for InputError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            InputError::InvalidCommand => write!(f, "Invalid command. Please try again."),
+        }
+    }
+}
+
 pub trait InputController {
     fn get_raw_input(&self) -> String;
-    fn parse_input(&self, input: &str) -> Option<InputType>;
+    fn parse_input(&self, input: &str) -> Result<InputType, InputError>;
 }
 
 pub trait PlayerController {
-    fn handle_input(&self, gamestate: &GameState) -> Option<InputType>;
+    fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError>;
 }
