@@ -1,9 +1,15 @@
 use crate::GameState;
-use std::f32;
+use std::{cell::Cell, f32};
 
 pub struct Board {
-    data: Vec<u8>,
+    data: Vec<CellState>,
     width: usize,
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum CellState {
+    Empty,
+    Player(u8),
 }
 
 pub const EMPTY_CELL_SYMBOL: u8 = 0;
@@ -12,13 +18,13 @@ const BOARD_STANDARD_WIDTH: usize = 3;
 impl Board {
     pub fn new() -> Board {
         Board {
-            data: vec![EMPTY_CELL_SYMBOL; BOARD_STANDARD_WIDTH * BOARD_STANDARD_WIDTH],
+            data: vec![CellState::Empty; BOARD_STANDARD_WIDTH * BOARD_STANDARD_WIDTH],
             width: BOARD_STANDARD_WIDTH,
         }
     }
 
     /// Creates a new board with given vector as board data. Panics if the resulting board is uneven.
-    pub fn new_from(data: Vec<u8>) -> Board {
+    pub fn new_from(data: Vec<CellState>) -> Board {
         let computed_width = f32::sqrt(data.len() as f32);
         if computed_width % 1.0 != 0.0 {
             panic!("Attempted to make a board of uneven size!");
@@ -31,7 +37,7 @@ impl Board {
 
     // NOTE: We currently do not check if there is already a piece here. May need to return an Option, or a Result
     pub fn place(&mut self, index: usize, piece_to_place: u8) {
-        self.data[index] = piece_to_place;
+        self.data[index] = CellState::Player(piece_to_place);
     }
 
     pub fn render(&self, game: &GameState) {
@@ -73,7 +79,7 @@ impl Board {
         println!();
     }
 
-    pub fn get_adjacent_cells(&self, cell_index: usize) -> Vec<u8> {
+    pub fn get_adjacent_cells(&self, cell_index: usize) -> Vec<CellState> {
         self.data
             .iter()
             .enumerate()
@@ -102,7 +108,7 @@ impl Board {
             .collect()
     }
 
-    pub fn get_row(&self, row_num: usize) -> Vec<u8> {
+    pub fn get_row(&self, row_num: usize) -> Vec<CellState> {
         let start = row_num * self.width;
         let end = start + self.width;
         if start > self.data.len() || end > self.data.len() {
@@ -111,11 +117,11 @@ impl Board {
         self.data[start..end].to_vec()
     }
 
-    pub fn get_all_rows(&self) -> Vec<Vec<u8>> {
+    pub fn get_all_rows(&self) -> Vec<Vec<CellState>> {
         (0..self.width).map(|n| self.get_row(n)).collect()
     }
 
-    fn get_column(&self, col_num: usize) -> Vec<u8> {
+    fn get_column(&self, col_num: usize) -> Vec<CellState> {
         if col_num > self.width - 1 {
             return vec![];
         }
@@ -127,11 +133,11 @@ impl Board {
             .collect()
     }
 
-    pub fn get_all_columns(&self) -> Vec<Vec<u8>> {
+    pub fn get_all_columns(&self) -> Vec<Vec<CellState>> {
         (0..self.width).map(|n| self.get_column(n)).collect()
     }
 
-    pub fn get_diagonal(&self, diagonal_num: usize) -> Vec<u8> {
+    pub fn get_diagonal(&self, diagonal_num: usize) -> Vec<CellState> {
         if diagonal_num > 1 {
             return vec![];
         }
@@ -146,7 +152,7 @@ impl Board {
             .collect()
     }
 
-    pub fn get_diagonals_of_cell(&self, cell_index: usize) -> Option<Vec<Vec<u8>>> {
+    pub fn get_diagonals_of_cell(&self, cell_index: usize) -> Option<Vec<Vec<CellState>>> {
         // All diagonal cells will have a modulo of 0 with the width of the board - 1
         if cell_index % self.width.overflowing_sub(1).0 != 0 {
             return None;
@@ -154,7 +160,7 @@ impl Board {
         let row = (cell_index as f32 / self.width as f32).floor();
         let col = cell_index as f32 % self.width as f32;
 
-        let mut diagonal_data: Vec<Vec<u8>> = vec![];
+        let mut diagonal_data: Vec<Vec<CellState>> = vec![];
         if row == col {
             diagonal_data.push(self.get_diagonal(0))
         } else if row + col == (self.width - 1) as f32 {
