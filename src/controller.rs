@@ -3,6 +3,7 @@ use crate::GameState;
 pub enum InputType {
     Coord(usize),
     Exit,
+    Restart,
     Help,
 }
 

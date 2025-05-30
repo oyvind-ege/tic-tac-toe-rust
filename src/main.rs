@@ -39,7 +39,7 @@ impl GameState<'_> {
                 Some(InputType::Exit) => {
                     self.exit_wanted = true;
                 }
-                None => {
+                _ => {
                     print!("");
                 }
             }
