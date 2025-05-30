@@ -1,4 +1,4 @@
-use crate::board::{Board, CellState};
+use crate::board::{Board, CellState, Diagonal};
 
 pub struct LogicController {}
 
@@ -32,8 +32,8 @@ impl LogicController {
     }
 
     fn has_diagonal_victor(&self, board: &Board) -> Option<CellState> {
-        let diagonal_1 = board.get_diagonal(0);
-        let diagonal_2 = board.get_diagonal(1);
+        let diagonal_1 = board.get_diagonal(Diagonal::Major);
+        let diagonal_2 = board.get_diagonal(Diagonal::Minor);
 
         self.has_victor(&diagonal_1)
             .or_else(|| self.has_victor(&diagonal_2))

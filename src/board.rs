@@ -14,6 +14,13 @@ pub enum CellState {
     AICellValue(u8),
 }
 
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum Diagonal {
+    Major = 0,
+    /// Also known as the antidiagonal
+    Minor = 1,
+}
+
 const BOARD_STANDARD_WIDTH: usize = 3;
 
 impl Board {
@@ -141,10 +148,11 @@ impl Board {
         (0..self.width).map(|n| self.get_column(n)).collect()
     }
 
-    pub fn get_diagonal(&self, diagonal_num: usize) -> Vec<CellState> {
-        if diagonal_num > 1 {
-            return vec![];
-        }
+    pub fn get_diagonal(&self, diagonal: Diagonal) -> Vec<CellState> {
+        let diagonal_num: usize = match diagonal {
+            Diagonal::Major => 0,
+            Diagonal::Minor => 1,
+        };
         let board_size_coefficient = self.width - 1;
         let step = (self.width + 1) / std::cmp::max(1, board_size_coefficient * diagonal_num);
         self.data
@@ -166,9 +174,9 @@ impl Board {
 
         let mut diagonal_data: Vec<Vec<CellState>> = vec![];
         if row == col {
-            diagonal_data.push(self.get_diagonal(0))
+            diagonal_data.push(self.get_diagonal(Diagonal::Major))
         } else if row + col == (self.width - 1) as f32 {
-            diagonal_data.push(self.get_diagonal(1));
+            diagonal_data.push(self.get_diagonal(Diagonal::Minor));
         }
 
         if diagonal_data.is_empty() {
@@ -478,7 +486,7 @@ mod tests {
             let b = Board { data, width: 3 };
 
             assert_eq!(
-                b.get_diagonal(0),
+                b.get_diagonal(Diagonal::Major),
                 vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]
             );
         }
@@ -499,31 +507,13 @@ mod tests {
             let b = Board { data, width: 3 };
 
             assert_eq!(
-                b.get_diagonal(1),
+                b.get_diagonal(Diagonal::Minor),
                 vec![
                     CellState::Player(2),
                     CellState::Player(4),
                     CellState::Player(6)
                 ]
             );
-        }
-
-        #[test]
-        fn empty() {
-            let data = vec![
-                CellState::Empty,
-                CellState::Player(1),
-                CellState::Player(2),
-                CellState::Player(3),
-                CellState::Player(4),
-                CellState::Player(5),
-                CellState::Player(6),
-                CellState::Player(7),
-                CellState::Player(8),
-            ];
-            let b = Board { data, width: 3 };
-
-            assert_eq!(b.get_diagonal(3), vec![]);
         }
     }
 
