@@ -148,6 +148,7 @@ mod tests {
 
     mod adjacency_score_tests {
         use super::*;
+        use crate::board::CellState;
 
         #[test]
         fn basic() {

@@ -1,16 +1,16 @@
-use crate::board::{Board, EMPTY_CELL_SYMBOL};
+use crate::board::{Board, CellState};
 
 pub struct LogicController {}
 
 impl LogicController {
     /// Return the encoded player symbol if they have won, None if no victor
-    pub fn check_for_victory(&self, board: &Board) -> Option<u8> {
+    pub fn check_for_victory(&self, board: &Board) -> Option<CellState> {
         self.has_horizontal_victor(board)
             .or_else(|| self.has_vertical_victor(board))
             .or_else(|| self.has_diagonal_victor(board))
     }
 
-    fn has_horizontal_victor(&self, board: &Board) -> Option<u8> {
+    fn has_horizontal_victor(&self, board: &Board) -> Option<CellState> {
         for h in board.get_all_rows() {
             let has_victor = self.has_victor(&h);
             if has_victor.is_some() {
@@ -20,7 +20,7 @@ impl LogicController {
         None
     }
 
-    fn has_vertical_victor(&self, board: &Board) -> Option<u8> {
+    fn has_vertical_victor(&self, board: &Board) -> Option<CellState> {
         for v in board.get_all_columns() {
             let has_victor = self.has_victor(&v);
             if has_victor.is_some() {
@@ -31,7 +31,7 @@ impl LogicController {
         None
     }
 
-    fn has_diagonal_victor(&self, board: &Board) -> Option<u8> {
+    fn has_diagonal_victor(&self, board: &Board) -> Option<CellState> {
         let diagonal_1 = board.get_diagonal(0);
         let diagonal_2 = board.get_diagonal(1);
 
@@ -39,16 +39,22 @@ impl LogicController {
             .or_else(|| self.has_victor(&diagonal_2))
     }
 
-    fn has_victor(&self, vec: &[u8]) -> Option<u8> {
+    fn has_victor(&self, vec: &[CellState]) -> Option<CellState> {
         let first = vec.first();
         first?;
-        if *first.unwrap() == EMPTY_CELL_SYMBOL {
-            return None;
-        }
-        if vec.iter().all(|&x| x == *first.unwrap()) {
-            Some(*first.unwrap())
-        } else {
-            None
+        match first {
+            Some(t) => match t {
+                CellState::Player(p) => {
+                    if vec.iter().all(|&x| x == CellState::Player(*p)) {
+                        Some(*first.unwrap())
+                    } else {
+                        None
+                    }
+                }
+                CellState::AICellValue(v) => None,
+                CellState::Empty => None,
+            },
+            None => None,
         }
     }
 }

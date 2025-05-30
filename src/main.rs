@@ -4,7 +4,7 @@ mod controller;
 mod logic;
 mod player;
 
-use crate::board::Board;
+use crate::board::*;
 use crate::controller::*;
 use crate::logic::LogicController;
 use crate::player::*;
@@ -51,7 +51,7 @@ impl GameState<'_> {
         if let Some(victor_encoded) = self.logic_controller.check_for_victory(&self.board) {
             let mut victor_name: &str = "";
             for p in &self.players {
-                if victor_encoded == p.encoded {
+                if victor_encoded == CellState::Player(p.encoded) {
                     victor_name = p.name;
                 }
             }

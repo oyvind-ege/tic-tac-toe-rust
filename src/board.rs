@@ -10,9 +10,9 @@ pub struct Board {
 pub enum CellState {
     Empty,
     Player(u8),
+    AICellValue(u8),
 }
 
-pub const EMPTY_CELL_SYMBOL: u8 = 0;
 const BOARD_STANDARD_WIDTH: usize = 3;
 
 impl Board {
@@ -45,13 +45,16 @@ impl Board {
         println!("The board currently looks like this:");
         for row in &self.get_all_rows() {
             for (i, cell) in row.iter().enumerate() {
-                for p in &game.players {
-                    if *cell == p.encoded {
-                        print!("{}", p.name);
+                match cell {
+                    CellState::Empty => print!(" "),
+                    CellState::Player(piece) => {
+                        for p in &game.players {
+                            if *piece == p.encoded {
+                                print!("{}", p.name);
+                            }
+                        }
                     }
-                }
-                if *cell == EMPTY_CELL_SYMBOL {
-                    print!(" ");
+                    CellState::AICellValue(val) => print!("{val}"),
                 }
                 if i < self.width - 1 {
                     print!(" | ");
@@ -94,7 +97,7 @@ impl Board {
             .collect()
     }
 
-    pub fn get_relevant_axes_of_cell_index(&self, cell_index: usize) -> Vec<Vec<u8>> {
+    pub fn get_relevant_axes_of_cell_index(&self, cell_index: usize) -> Vec<Vec<CellState>> {
         let row_number_of_cell = (cell_index as f32 / self.width as f32).floor();
         let row = self.get_row(row_number_of_cell as usize);
         let column_number_of_cell = 0;
@@ -185,45 +188,83 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_adjacent_cells(4), vec![CellState::Player(1), CellState::Player(3), CellState::Player(5), CellState::Player(7)]);
+            assert_eq!(
+                b.get_adjacent_cells(4),
+                vec![
+                    CellState::Player(1),
+                    CellState::Player(3),
+                    CellState::Player(5),
+                    CellState::Player(7)
+                ]
+            );
         }
 
         #[test]
         fn second() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_adjacent_cells(0), vec![CellState::Player(1), CellState::Player(3)]);
+            assert_eq!(
+                b.get_adjacent_cells(0),
+                vec![CellState::Player(1), CellState::Player(3)]
+            );
         }
 
         #[test]
         fn third() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_adjacent_cells(1), vec![CellState::Empty, CellState::Player(2), CellState::Player(4)]);
+            assert_eq!(
+                b.get_adjacent_cells(1),
+                vec![CellState::Empty, CellState::Player(2), CellState::Player(4)]
+            );
         }
 
         #[test]
         fn no_match() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
@@ -237,45 +278,86 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_row(0), vec![CellState::Empty, CellState::Player(1), CellState::Player(2)]);
+            assert_eq!(
+                b.get_row(0),
+                vec![CellState::Empty, CellState::Player(1), CellState::Player(2)]
+            );
         }
 
         #[test]
         fn second() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_row(1), vec![CellState::Player(3), CellState::Player(4), CellState::Player(5)]);
+            assert_eq!(
+                b.get_row(1),
+                vec![
+                    CellState::Player(3),
+                    CellState::Player(4),
+                    CellState::Player(5)
+                ]
+            );
         }
 
         #[test]
         fn third() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_row(2), vec![CellState::Player(6), CellState::Player(7), CellState::Player(8)]);
+            assert_eq!(
+                b.get_row(2),
+                vec![
+                    CellState::Player(6),
+                    CellState::Player(7),
+                    CellState::Player(8)
+                ]
+            );
         }
 
         #[test]
         fn no_such_row() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
@@ -289,45 +371,86 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_column(0), vec![CellState::Empty, CellState::Player(3), CellState::Player(6)]);
+            assert_eq!(
+                b.get_column(0),
+                vec![CellState::Empty, CellState::Player(3), CellState::Player(6)]
+            );
         }
 
         #[test]
         fn second() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_column(1), vec![CellState::Player(1), CellState::Player(4), CellState::Player(7)]);
+            assert_eq!(
+                b.get_column(1),
+                vec![
+                    CellState::Player(1),
+                    CellState::Player(4),
+                    CellState::Player(7)
+                ]
+            );
         }
 
         #[test]
         fn third() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_column(2), vec![CellState::Player(2), CellState::Player(5), CellState::Player(8)]);
+            assert_eq!(
+                b.get_column(2),
+                vec![
+                    CellState::Player(2),
+                    CellState::Player(5),
+                    CellState::Player(8)
+                ]
+            );
         }
 
         #[test]
         fn empty() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
@@ -341,33 +464,61 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_diagonal(0), vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]);
+            assert_eq!(
+                b.get_diagonal(0),
+                vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]
+            );
         }
 
         #[test]
         fn second() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_diagonal(1), vec![CellState::Player(2), CellState::Player(4), CellState::Player(6)]);
+            assert_eq!(
+                b.get_diagonal(1),
+                vec![
+                    CellState::Player(2),
+                    CellState::Player(4),
+                    CellState::Player(6)
+                ]
+            );
         }
 
         #[test]
         fn empty() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
             let b = Board { data, width: 3 };
 
@@ -381,17 +532,23 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
 
             let board = Board::new_from(data);
             assert_eq!(
                 board.get_relevant_axes_of_cell_index(0),
                 vec![
-                    vec![CellState::Empty, CellState::Player(1), CellState::Player(2)], 
-                    vec![CellState::Empty, CellState::Player(3), CellState::Player(6)], 
+                    vec![CellState::Empty, CellState::Player(1), CellState::Player(2)],
+                    vec![CellState::Empty, CellState::Player(3), CellState::Player(6)],
                     vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]
                 ]
             );
@@ -400,16 +557,22 @@ mod tests {
         #[test]
         fn second() {
             let data = vec![
-                CellState::Empty, CellState::Empty, CellState::Empty,
-                CellState::Player(1), CellState::Player(1), CellState::Player(1),
-                CellState::Player(2), CellState::Player(2), CellState::Player(2)
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(1),
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(2),
+                CellState::Player(2),
             ];
 
             let board = Board::new_from(data);
             assert_eq!(
                 board.get_relevant_axes_of_cell_index(1),
                 vec![
-                    vec![CellState::Empty, CellState::Empty, CellState::Empty], 
+                    vec![CellState::Empty, CellState::Empty, CellState::Empty],
                     vec![CellState::Empty, CellState::Player(1), CellState::Player(2)]
                 ]
             );
@@ -418,18 +581,36 @@ mod tests {
         #[test]
         fn third() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
 
             let board = Board::new_from(data);
             assert_eq!(
                 board.get_relevant_axes_of_cell_index(4),
                 vec![
-                    vec![CellState::Player(3), CellState::Player(4), CellState::Player(5)], 
-                    vec![CellState::Player(1), CellState::Player(4), CellState::Player(7)], 
-                    vec![CellState::Player(2), CellState::Player(4), CellState::Player(6)], 
+                    vec![
+                        CellState::Player(3),
+                        CellState::Player(4),
+                        CellState::Player(5)
+                    ],
+                    vec![
+                        CellState::Player(1),
+                        CellState::Player(4),
+                        CellState::Player(7)
+                    ],
+                    vec![
+                        CellState::Player(2),
+                        CellState::Player(4),
+                        CellState::Player(6)
+                    ],
                     vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]
                 ]
             );
@@ -438,17 +619,31 @@ mod tests {
         #[test]
         fn fourth() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
 
             let board = Board::new_from(data);
             assert_eq!(
                 board.get_relevant_axes_of_cell_index(8),
                 vec![
-                    vec![CellState::Player(2), CellState::Player(5), CellState::Player(8)], 
-                    vec![CellState::Player(6), CellState::Player(7), CellState::Player(8)], 
+                    vec![
+                        CellState::Player(2),
+                        CellState::Player(5),
+                        CellState::Player(8)
+                    ],
+                    vec![
+                        CellState::Player(6),
+                        CellState::Player(7),
+                        CellState::Player(8)
+                    ],
                     vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]
                 ]
             );
@@ -461,32 +656,52 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
 
             let board = Board::new_from(data);
             assert_eq!(
-                board.get_diagonals_of_cell(0), 
-                Some(vec![vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]])
+                board.get_diagonals_of_cell(0),
+                Some(vec![vec![
+                    CellState::Empty,
+                    CellState::Player(4),
+                    CellState::Player(8)
+                ]])
             )
         }
 
         #[test]
         fn second() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
 
             let board = Board::new_from(data);
             assert_eq!(
                 board.get_diagonals_of_cell(4),
                 Some(vec![
-                    vec![CellState::Empty, CellState::Player(4), CellState::Player(8)], 
-                    vec![CellState::Player(2), CellState::Player(4), CellState::Player(6)]
+                    vec![CellState::Empty, CellState::Player(4), CellState::Player(8)],
+                    vec![
+                        CellState::Player(2),
+                        CellState::Player(4),
+                        CellState::Player(6)
+                    ]
                 ])
             )
         }
@@ -494,9 +709,15 @@ mod tests {
         #[test]
         fn third() {
             let data = vec![
-                CellState::Empty, CellState::Player(1), CellState::Player(2),
-                CellState::Player(3), CellState::Player(4), CellState::Player(5),
-                CellState::Player(6), CellState::Player(7), CellState::Player(8)
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(3),
+                CellState::Player(4),
+                CellState::Player(5),
+                CellState::Player(6),
+                CellState::Player(7),
+                CellState::Player(8),
             ];
 
             let board = Board::new_from(data);
@@ -510,9 +731,15 @@ mod tests {
         #[test]
         fn basic() {
             let data = vec![
-                CellState::Empty, CellState::Empty, CellState::Empty,
-                CellState::Empty, CellState::Empty, CellState::Empty,
-                CellState::Empty, CellState::Empty, CellState::Empty
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
             ];
 
             let board = Board::new_from(data.clone());
@@ -523,9 +750,14 @@ mod tests {
         #[should_panic]
         fn should_panic() {
             let data = vec![
-                CellState::Empty, CellState::Empty, CellState::Player(1),
-                CellState::Player(1), CellState::Player(1), CellState::Player(2),
-                CellState::Player(2), CellState::Player(2)
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Player(1),
+                CellState::Player(1),
+                CellState::Player(1),
+                CellState::Player(2),
+                CellState::Player(2),
+                CellState::Player(2),
             ];
             let _board = Board::new_from(data);
         }
