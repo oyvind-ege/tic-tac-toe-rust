@@ -1,3 +1,4 @@
+use crate::board::CellState;
 use crate::InputType;
 use crate::{Board, GameState, PlayerController};
 
@@ -36,7 +37,7 @@ impl AIPlayer {
         board
             .get_adjacent_cells(cell_number)
             .iter()
-            .filter(|cell| **cell == self.encoded)
+            .filter(|cell| **cell == CellState::Player(self.encoded))
             .count()
             .try_into()
             .unwrap()
