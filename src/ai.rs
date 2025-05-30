@@ -151,7 +151,17 @@ mod tests {
 
         #[test]
         fn basic() {
-            let board = Board::new_from(vec![0, 32, 0, 32, 0, 0, 0, 32, 0]);
+            let board = Board::new_from(vec![
+                CellState::Empty,
+                CellState::Player(32),
+                CellState::Empty,
+                CellState::Player(32),
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Empty,
+                CellState::Player(32),
+                CellState::Empty,
+            ]);
             let ai = AIPlayer {
                 test_board: Board::new(),
                 encoded: 32,
