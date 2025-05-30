@@ -16,9 +16,9 @@ pub enum CellState {
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Diagonal {
-    Major = 0,
+    Major,
     /// Also known as the antidiagonal
-    Minor = 1,
+    Minor,
 }
 
 const BOARD_STANDARD_WIDTH: usize = 3;
