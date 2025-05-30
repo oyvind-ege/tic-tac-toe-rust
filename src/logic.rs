@@ -32,11 +32,8 @@ impl LogicController {
     }
 
     fn has_diagonal_victor(&self, board: &Board) -> Option<CellState> {
-        let diagonal_1 = board.get_diagonal(Diagonal::Major);
-        let diagonal_2 = board.get_diagonal(Diagonal::Minor);
-
-        self.has_victor(&diagonal_1)
-            .or_else(|| self.has_victor(&diagonal_2))
+        self.has_victor(&board.get_diagonal(Diagonal::Major))
+            .or_else(|| self.has_victor(&board.get_diagonal(Diagonal::Minor)))
     }
 
     fn has_victor(&self, vec: &[CellState]) -> Option<CellState> {
@@ -51,7 +48,7 @@ impl LogicController {
                         None
                     }
                 }
-                CellState::AICellValue(v) => None,
+                CellState::AICellValue(_) => None,
                 CellState::Empty => None,
             },
             None => None,
