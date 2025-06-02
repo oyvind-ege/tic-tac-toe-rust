@@ -1,3 +1,5 @@
+use std::cmp;
+
 use crate::board::CellState;
 use crate::controller::InputError;
 use crate::InputType;
@@ -6,6 +8,47 @@ use crate::{Board, GameState, PlayerController};
 pub struct AIPlayer {
     test_board: Board,
     encoded: u8,
+}
+
+pub struct AIMinimax {}
+
+impl PlayerController for AIMinimax {
+    fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
+        todo!();
+    }
+}
+
+impl AIMinimax {
+    pub fn new() -> AIMinimax {
+        AIMinimax {}
+    }
+
+    fn minimax(
+        &self,
+        current_depth: u8,
+        board_state: &Board,
+        max_depth: u8,
+        is_maximizer: bool,
+    ) -> (usize, i8) {
+        if current_depth == max_depth || board_state.check_for_victory().is_some() {
+            return (0, 0);
+        }
+        if is_maximizer {
+            // get possible states
+            // for each state
+            // do a math.max
+            let mut max: i8 = 1;
+            //for state in states.enumerate()
+            //  max = cmp::max(max, minimax(current_depth + 1, state, depth, i, scores, max_depth, is_maximizer))
+            //
+            return (0, max);
+        }
+        (0, 0)
+    }
+
+    fn get_possible_states(&self, from_state: &Board) -> Vec<Board> {
+        todo!();
+    }
 }
 
 impl PlayerController for AIPlayer {

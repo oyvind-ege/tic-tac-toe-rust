@@ -6,12 +6,10 @@ mod player;
 
 use crate::board::*;
 use crate::controller::*;
-use crate::logic::LogicController;
 use crate::player::*;
 
 struct GameState<'a> {
     board: Board,
-    logic_controller: LogicController,
     exit_wanted: bool,
     players: Vec<Player<'a>>,
 }
@@ -20,10 +18,9 @@ impl GameState<'_> {
     pub fn new<'a>() -> GameState<'a> {
         GameState {
             board: Board::new(),
-            logic_controller: LogicController {},
             players: vec![
                 Player::new("X", 32, PlayerType::Local),
-                Player::new("Y", 64, PlayerType::AI),
+                Player::new("Y", 64, PlayerType::AI(AIStrategy::Other)),
             ],
             exit_wanted: false,
         }
@@ -49,7 +46,7 @@ impl GameState<'_> {
     }
 
     fn check_for_victor(&mut self) {
-        if let Some(victor_encoded) = self.logic_controller.check_for_victory(&self.board) {
+        if let Some(victor_encoded) = self.board.check_for_victory() {
             let mut victor_name: &str = "";
             for p in &self.players {
                 if victor_encoded == CellState::Player(p.encoded) {

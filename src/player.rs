@@ -1,3 +1,4 @@
+use crate::ai::AIMinimax;
 use crate::ai::AIPlayer;
 use crate::controller::*;
 use crate::GameState;
@@ -5,7 +6,7 @@ use std::io;
 
 pub enum PlayerType {
     Local,
-    AI,
+    AI(AIStrategy),
     Remote,
 }
 
@@ -13,6 +14,11 @@ pub struct Player<'a> {
     pub name: &'a str,
     pub encoded: u8,
     pub controller: Box<dyn PlayerController>,
+}
+
+pub enum AIStrategy {
+    Minimax,
+    Other,
 }
 
 pub struct LocalPlayer {}
@@ -24,7 +30,8 @@ impl<'a> Player<'a> {
             encoded,
             controller: match ptype {
                 PlayerType::Local => Box::new(LocalPlayer {}),
-                PlayerType::AI => Box::new(AIPlayer::new(encoded)),
+                PlayerType::AI(AIStrategy::Minimax) => Box::new(AIMinimax::new()),
+                PlayerType::AI(AIStrategy::Other) => Box::new(AIPlayer::new(encoded)),
                 PlayerType::Remote => {
                     println!("Multiplayer not supported.");
                     Box::new(AIPlayer::new(encoded))
