@@ -1,7 +1,6 @@
 mod ai;
 mod board;
 mod controller;
-mod logic;
 mod player;
 
 use crate::board::*;
