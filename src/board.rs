@@ -1,6 +1,7 @@
 use crate::GameState;
 use std::{cell::Cell, f32};
 
+#[derive(Clone, Debug)]
 pub struct Board {
     data: Vec<CellState>,
     width: usize,
@@ -56,7 +57,7 @@ impl Board {
                 match cell {
                     CellState::Empty => print!(" "),
                     CellState::Player(piece) => {
-                        for p in &game.players {
+                        for p in game.players.iter() {
                             if *piece == p.encoded {
                                 print!("{}", p.name);
                             }
@@ -88,6 +89,23 @@ impl Board {
             println!("__|___|___");
         }
         println!();
+    }
+
+    pub fn is_full(&self) -> bool {
+        self.data.iter().all(|c| *c != CellState::Empty)
+    }
+
+    pub fn modify_at_cell(&mut self, pos: usize, new_value: CellState) {
+        self.data[pos] = new_value;
+    }
+
+    pub fn get_positions_of_empty_cells(&self) -> Vec<usize> {
+        self.data
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| **cell == CellState::Empty)
+            .map(|(i, _)| i)
+            .collect()
     }
 
     pub fn get_adjacent_cells(&self, cell_index: usize) -> Vec<CellState> {

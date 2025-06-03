@@ -1,9 +1,10 @@
-use crate::ai::AIMinimax;
-use crate::ai::AIPlayer;
+use crate::ai::minimax::AIMinimax;
+use crate::ai::poor::AIPlayer;
 use crate::controller::*;
 use crate::GameState;
 use std::io;
 
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum PlayerType {
     Local,
     AI(AIStrategy),
@@ -13,9 +14,11 @@ pub enum PlayerType {
 pub struct Player<'a> {
     pub name: &'a str,
     pub encoded: u8,
+    ptype: PlayerType,
     pub controller: Box<dyn PlayerController>,
 }
 
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum AIStrategy {
     Minimax,
     Other,
@@ -28,6 +31,7 @@ impl<'a> Player<'a> {
         Player {
             name,
             encoded,
+            ptype,
             controller: match ptype {
                 PlayerType::Local => Box::new(LocalPlayer {}),
                 PlayerType::AI(AIStrategy::Minimax) => Box::new(AIMinimax::new()),
@@ -38,6 +42,10 @@ impl<'a> Player<'a> {
                 }
             },
         }
+    }
+
+    pub fn player_type(&self) -> PlayerType {
+        self.ptype
     }
 }
 
