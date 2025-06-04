@@ -1,5 +1,5 @@
 use crate::GameState;
-use std::{cell::Cell, f32};
+use std::f32;
 
 #[derive(Clone, Debug)]
 pub struct Board {
@@ -11,15 +11,17 @@ pub struct Board {
 pub enum CellState {
     Empty,
     Player(u8),
-    /// Represents an AI scoring value for this particular cell
-    AICellValue(u8),
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Diagonal {
     Major,
-    /// Also known as the antidiagonal
     Minor,
+}
+
+#[derive(Debug, Clone)]
+pub enum BoardError {
+    MoveError(String),
 }
 
 const BOARD_STANDARD_WIDTH: usize = 3;
@@ -44,9 +46,19 @@ impl Board {
         }
     }
 
-    // NOTE: We currently do not check if there is already a piece here. May need to return an Option, or a Result
-    pub fn place(&mut self, index: usize, piece_to_place: u8) {
-        self.data[index] = CellState::Player(piece_to_place);
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn place(&mut self, index: usize, piece_to_place: u8) -> Result<(), BoardError> {
+        if self.data[index] != CellState::Empty {
+            Err(BoardError::MoveError(
+                "Invalid move: Cell already occupied".to_string(),
+            ))
+        } else {
+            self.data[index] = CellState::Player(piece_to_place);
+            Ok(())
+        }
     }
 
     pub fn render(&self, game: &GameState) {
@@ -63,7 +75,6 @@ impl Board {
                             }
                         }
                     }
-                    CellState::AICellValue(val) => print!("{val}"),
                 }
                 if i < self.width - 1 {
                     print!(" | ");
@@ -249,7 +260,6 @@ impl Board {
                         None
                     }
                 }
-                CellState::AICellValue(_) => None,
                 CellState::Empty => None,
             },
             None => None,

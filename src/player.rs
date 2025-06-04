@@ -1,6 +1,7 @@
 use crate::ai::minimax::AIMinimax;
 use crate::ai::poor::AIPlayer;
 use crate::controller::*;
+use crate::Board;
 use crate::GameState;
 use std::io;
 
@@ -56,25 +57,35 @@ impl InputController for LocalPlayer {
         input.trim().to_string()
     }
 
-    fn parse_input(&self, input: &str) -> Result<InputType, InputError> {
+    fn parse_input(&self, input: &str, board_info: &Board) -> Result<InputType, InputError> {
         match input {
             val if val == "help" || val == "Help" || val == "HELP" => Ok(InputType::Help),
             val if val == "exit" || val == "Exit" || val == "EXIT" => Ok(InputType::Exit),
             val if val.parse::<usize>().is_ok() => {
-                Ok(InputType::Coord(val.parse::<usize>().unwrap()))
+                let parsed_number = val.parse::<usize>().expect("Could not parse input value.");
+                self.validate_input(parsed_number, board_info)?;
+                Ok(InputType::Coord(parsed_number))
             }
 
             _ => Err(InputError::InvalidCommand),
         }
     }
+
+    fn validate_input(&self, input: usize, board_info: &Board) -> Result<(), InputError> {
+        if input > board_info.len() - 1 {
+            return Err(InputError::InputTooLarge);
+        }
+        Ok(())
+    }
 }
 
 impl PlayerController for LocalPlayer {
-    fn handle_input(&self, _: &GameState) -> Result<InputType, InputError> {
+    fn handle_input(&self, game_state: &GameState) -> Result<InputType, InputError> {
+        println!();
         println!("What do you want to do?");
         println!("Type a number from 0 to 8 to make your choice.");
         println!("Type 'help' for assistance on how to designate the board.");
         println!("Type 'exit' to quit.");
-        self.parse_input(&self.get_raw_input())
+        self.parse_input(&self.get_raw_input(), &game_state.board)
     }
 }

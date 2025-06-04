@@ -101,21 +101,28 @@ impl GameState<'_> {
 
     fn process_turn(&mut self) {
         for player in self.players.iter() {
-            match player.controller.handle_input(self) {
-                Ok(InputType::Help) => {
-                    self.board.render_help();
+            'inputloop: loop {
+                match player.controller.handle_input(self) {
+                    Ok(InputType::Help) => {
+                        self.board.render_help();
+                    }
+                    Ok(InputType::Coord(coord)) => {
+                        let _ = self.board.place(coord, player.encoded);
+                        break;
+                    }
+                    Ok(InputType::Exit) => {
+                        self.exit_wanted = true;
+                        break;
+                    }
+                    Ok(_) => print!("Not implemented."),
+                    Err(e) => {
+                        println!("{e}");
+                        continue 'inputloop;
+                    }
                 }
-                Ok(InputType::Coord(coord)) => {
-                    self.board.place(coord, player.encoded);
-                }
-                Ok(InputType::Exit) => {
-                    self.exit_wanted = true;
-                    break;
-                }
-                Ok(_) => print!("Not implemented."),
-                Err(e) => {
-                    print!("{e}");
-                }
+            }
+            if self.exit_wanted {
+                break;
             }
         }
         self.check_for_victor();
