@@ -1,7 +1,7 @@
 use crate::ai::minimax::AIMinimax;
 use crate::ai::poor::AIPlayer;
+use crate::board::Board;
 use crate::controller::*;
-use crate::Board;
 use crate::GameState;
 use std::io;
 
@@ -86,6 +86,6 @@ impl PlayerController for LocalPlayer {
         println!("Type a number from 0 to 8 to make your choice.");
         println!("Type 'help' for assistance on how to designate the board.");
         println!("Type 'exit' to quit.");
-        self.parse_input(&self.get_raw_input(), &game_state.board)
+        self.parse_input(&self.get_raw_input(), game_state.board())
     }
 }

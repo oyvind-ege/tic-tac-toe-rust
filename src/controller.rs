@@ -1,4 +1,4 @@
-use crate::Board;
+use crate::board::Board;
 use std::fmt::Display;
 
 use crate::GameState;

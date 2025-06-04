@@ -69,7 +69,7 @@ impl Board {
                 match cell {
                     CellState::Empty => print!(" "),
                     CellState::Player(piece) => {
-                        for p in game.players.iter() {
+                        for p in game.players().iter() {
                             if *piece == p.encoded {
                                 print!("{}", p.name);
                             }

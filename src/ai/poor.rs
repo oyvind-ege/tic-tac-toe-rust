@@ -1,4 +1,6 @@
-use crate::{Board, CellState, GameState, InputError, InputType, PlayerController};
+use crate::board::*;
+use crate::controller::*;
+use crate::gamestate::*;
 
 pub struct AIPlayer {
     test_board: Board,
@@ -53,7 +55,7 @@ impl AIPlayer {
 #[cfg(test)]
 mod tests {
     use super::AIPlayer;
-    use crate::Board;
+    use crate::board::Board;
 
     mod is_blocked_tests {
         use super::*;

@@ -1,24 +1,18 @@
-use crate::PlayersInfo;
 use std::cmp;
 
-use crate::board::CellState;
-use crate::controller::InputError;
-use crate::InputType;
-use crate::{Board, GameState, PlayerController};
+use crate::board::*;
+use crate::controller::*;
+use crate::player::playerlist::*;
+use crate::GameState;
 
 pub struct AIMinimax {}
 
 impl PlayerController for AIMinimax {
     fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
-        let players_info = gamestate.players.get_players_piece_info();
-        let minimax = self.minimax(
-            0,
-            &gamestate.board,
-            &players_info,
-            gamestate.players.get_ai_player_piece(),
-            true,
-        );
-        Ok(InputType::Coord(minimax.unwrap().0))
+        let players_info = gamestate.players().get_players_piece_info();
+        let best_move = self.find_best_move(&gamestate.board(), &players_info);
+        println!("Best move is: {best_move}");
+        Ok(InputType::Coord(best_move))
     }
 }
 
@@ -41,6 +35,35 @@ impl PartialOrd for MiniMaxMoveAndScore {
 impl AIMinimax {
     pub fn new() -> AIMinimax {
         AIMinimax {}
+    }
+
+    fn find_best_move(&self, board: &Board, players_info: &PlayersInfo) -> usize {
+        let possible_moves = board.get_positions_of_empty_cells();
+        let mut best_move = possible_moves[0];
+        let mut best_score = i8::MIN;
+
+        for &move_pos in &possible_moves {
+            let mut temporary_board = board.clone();
+            temporary_board.modify_at_cell(move_pos, CellState::Player(players_info.ai_piece));
+
+            let score = self.minimax(
+                move_pos,
+                &temporary_board,
+                players_info,
+                players_info.player_piece, // Next player to move
+                false,                     // AI just moved, so now minimize
+            );
+
+            if let Some(move_score) = score {
+                if move_score.1 > best_score {
+                    best_score = move_score.1;
+                    best_move = move_pos;
+                }
+            }
+            // Resetting the board so we don't have to clone multiple times.
+        }
+
+        best_move
     }
 
     fn minimax(
@@ -115,7 +138,6 @@ impl AIMinimax {
                 )
             }
         }
-        dbg!("Best move is {}", best.0);
         Some(best)
     }
 
