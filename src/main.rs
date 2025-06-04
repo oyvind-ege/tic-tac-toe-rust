@@ -5,7 +5,7 @@ mod player;
 
 use crate::board::*;
 use crate::controller::*;
-use crate::player::*;
+use crate::player::playerlist::*;
 
 struct GameState<'a> {
     board: Board,
@@ -13,94 +13,18 @@ struct GameState<'a> {
     players: PlayerList<'a>,
 }
 
-struct PlayerList<'a> {
-    player_1: Player<'a>,
-    player_2: Player<'a>,
-}
-
-struct PlayerListIterator<'a> {
-    players: &'a PlayerList<'a>,
-    index: usize,
-}
-
-pub struct PlayersInfo {
-    ai_piece: u8,
-    player_piece: u8,
-}
-
-// I am doing this primarily for fun and learning, and so I can iterate over players
-impl<'a> Iterator for PlayerListIterator<'a> {
-    type Item = &'a Player<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.index {
-            0 => {
-                self.index += 1;
-                Some(&self.players.player_1)
-            }
-            1 => {
-                self.index += 1;
-                Some(&self.players.player_2)
-            }
-            _ => {
-                self.index = 0;
-                None
-            }
-        }
-    }
-}
-
-impl<'a> PlayerList<'a> {
-    pub fn get_ai_player_piece(&self) -> u8 {
-        if self.player_1.player_type() == PlayerType::Local
-            || self.player_1.player_type() == PlayerType::Remote
-        {
-            self.player_2.encoded
-        } else {
-            self.player_1.encoded
-        }
-    }
-
-    pub fn get_players_piece_info(&self) -> PlayersInfo {
-        PlayersInfo {
-            ai_piece: self.get_ai_player_piece(),
-            player_piece: self.get_human_player_piece(),
-        }
-    }
-
-    // Not DRY
-    pub fn get_human_player_piece(&self) -> u8 {
-        if self.player_1.player_type() == PlayerType::Local
-            || self.player_1.player_type() == PlayerType::Remote
-        {
-            self.player_1.encoded
-        } else {
-            self.player_2.encoded
-        }
-    }
-
-    pub fn iter(&self) -> PlayerListIterator {
-        PlayerListIterator {
-            players: self,
-            index: 0,
-        }
-    }
-}
-
 impl GameState<'_> {
     pub fn new<'a>() -> GameState<'a> {
         GameState {
             board: Board::new(),
-            players: PlayerList {
-                player_1: Player::new("x", 32, PlayerType::Local),
-                player_2: Player::new("y", 64, PlayerType::AI(AIStrategy::Minimax)),
-            },
+            players: PlayerList::default(),
             exit_wanted: false,
         }
     }
 
     fn process_turn(&mut self) {
         for player in self.players.iter() {
+            // Inner loop to ensure player provides correct input
             'inputloop: loop {
                 match player.controller.handle_input(self) {
                     Ok(InputType::Help) => {
@@ -117,6 +41,7 @@ impl GameState<'_> {
                     Ok(_) => print!("Not implemented."),
                     Err(e) => {
                         println!("{e}");
+                        // We want the player(s) to be able to rectify their choice and provide true input
                         continue 'inputloop;
                     }
                 }
