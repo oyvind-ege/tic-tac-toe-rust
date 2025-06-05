@@ -1,5 +1,4 @@
 use std::cmp;
-use std::fmt::Display;
 
 use crate::board::*;
 use crate::controller::*;
