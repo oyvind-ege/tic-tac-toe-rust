@@ -11,7 +11,6 @@ impl PlayerController for AIMinimax {
     fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
         let players_info = gamestate.players().get_players_piece_info();
         let best_move = self.find_best_move(gamestate.board(), &players_info);
-        println!("Best move is: {best_move}");
         Ok(InputType::Coord(best_move))
     }
 }

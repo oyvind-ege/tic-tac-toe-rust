@@ -1,13 +1,12 @@
-# Tic-Tac-Toe in Rust
+# My Tic-Tac-Toe Game in Rust
 
-A command-line tic-tac-toe game written in Rust, featuring human vs AI gameplay with a minimax algorithm implementation.
+A command-line tic-tac-toe game I built while learning Rust. You can play against an AI opponent that uses the minimax algorithm to make optimal moves.
 
-## Features
+## What It Does
 
-- **Human vs AI gameplay** with computer opponent, making optimal choices
-- **Minimax algorithm** for optimal AI decision making
-- **Modular architecture** with clear separation of concerns
-- **Extensible design** supporting multiple player types and AI strategies
+- **Play against the computer** - the AI uses minimax to make good moves
+- **Clean code structure** - I tried to organize things in a way that makes sense
+- **Room to grow** - designed as best as I could, so I can add new features later
 
 ## Architecture
 
@@ -27,51 +26,59 @@ src/
     └── minimax.rs      # Minimax algorithm implementation
 ```
 
-### Design Patterns & Principles
+### How I Structured Things
 
-#### **Trait-Based Architecture**
-- `PlayerController` trait enables polymorphic behavior for different player types
-- `InputController` trait abstracts input handling for extensibility
-- Clean separation between human and AI input processing
+#### **Using Traits for Flexibility**
+Traits is the Rust equivalent of interfaces. I have a couple in my code: 
 
-In the future, I would like to support multiplayer.
+- `PlayerController` trait lets me handle human and AI players the same way
+- `InputController` trait makes it easy to add different input methods later
+- Kept human and AI logic separate but consistent
 
-#### **Error Handling**
-- Custom error types (`BoardError`, `InputError`) with descriptive messages
-- Validation at multiple layers:
-  - Input parsing validation
-  - Game rule validation
-  - Board state validation
-- Occasional graceful error recovery with user-friendly feedback ;)
+This might be overengineered, and I am not entirely convinced myself, but it made for fun learning.
 
-#### **Modular Design**
-- I have tried to let each module have a single responsibility
-- Largely clear interfaces between components
-- Easy to extend with new player types or AI strategies
 
-## Technical Highlights
-
-### **Minimax AI Implementation**
-The AI uses the minimax algorithm with game tree exploration to make optimal moves:
+#### **Enums**
+I love enums. Here are some of mine:
 
 ```rust
-fn minimax(&self, board: &Board, players_info: &PlayersInfo, 
-           depth: i8, is_maximizer: bool) -> i8
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum CellState {
+    Empty,
+    Player(u8),
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum Diagonal {
+    Major,
+    Minor,
+}
+
+#[derive(Debug, Clone)]
+pub enum BoardError {
+    CellOccupied(usize),
+    OutOfBounds(usize),
+}
 ```
 
-- Evaluates all possible game states
-- Chooses moves that maximize AI advantage while minimizing opponent advantage
-- Includes depth-based scoring for preferring quicker wins
-- Demonstrates understanding of recursive algorithms and game theory
+#### **Error Handling**
+- Custom error types (`BoardError`, `InputError`) with helpful messages
+- Input validation happens primarily on the human player side when parsing user input
+    - I assume AI never suggests and out-of-bounds move, or a move on a non-empty cell
+- Tries to give useful feedback when things go wrong
 
-*The minimax implementation does not do alpha-beta pruning, yet!*
+There is still some work to be done here. I am overall not happy with the error handling patterns.
 
-### **Input Validation**
-I tried to keep this simple:
+#### **Example: Handling User Input**
+I kept the validation flow straightforward:
 
-1. **Parsing Layer**: Converts string input to typed commands
-2. **Game Logic Layer**: Validates moves against game rules
-3. **Board Layer**: Ensures board state consistency
+```rust
+// Human player input flow:
+get_raw_input() -> parse_input() -> is_valid_move() -> place()
+
+// AI player input flow (it is at present not possible for AI to choose a wrong coordinate):
+find_best_move() -> InputType::Coord() -> place()
+```
 
 ```rust
 pub fn is_valid_move(&self, index: usize) -> Result<(), BoardError> {
@@ -84,64 +91,66 @@ pub fn is_valid_move(&self, index: usize) -> Result<(), BoardError> {
 }
 ```
 
-### **Somewhat Flexible Board Implementation**
-- (Limited) support for arbitrary square board sizes (though optimized for 3x3)
-- Comprehensive victory condition checking
+#### **Keeping Things Organized**
+- Each module focuses largely on one main thing
+- Interfaces between parts are reasonably clean
+- Should be straightforward to add new player types or AI strategies
 
-### **Game State Management**
-- Centralized game loop with turn-based processing
-- Victory and draw detection
-- Clean separation between game state and player actions
-- Input retry loop ensuring valid moves before proceeding
+I am still learning how to structure my Rust projects, but this works ish.
 
-*In the future: an event-based architecture.*
+## What I Learned Building This
 
-## Some of the skills this project requires
+### **Implementing Minimax**
+This was my first time implementing the minimax algorithm. The AI explores possible game states to pick the best move:
 
-### **Rust**
-- **Ownership & Borrowing**: Proper lifetime management without memory leaks
-- **Pattern Matching**: Extensive use of `match` for control flow and error handling
-- **Error Handling**: Idiomatic `Result<T, E>` usage throughout
-- **Traits & Generics**: Polymorphic design with trait objects (`Box<dyn PlayerController>`)
-- **Testing**: Unit tests with multiple test modules
-
-### **Software Engineering**
-- **Clean Architecture**: Clear separation of concerns across modules
-- **SOLID Principles**: Single responsibility, open/closed, dependency inversion
-- **Error Handling Strategy**: Comprehensive validation and user feedback
-- **Extensible Design**: Easy to add new player types or AI strategies
-- **Iterator Pattern**: Custom iterator implementation for `PlayerList`
-
-### **Algorithms & Data Structures**
-- **Minimax Algorithm**: Game theory implementation with depth consideration
-- **Tree Traversal**: Recursive game state exploration
-- **Mathematical Calculations**: Square root validation for board dimensions
-
-### **Testing & Quality Assurance**
-- **Unit Testing**: Comprehensive test coverage for core functionality
-- **Edge Case Handling**: Tests for boundary conditions and error states
-- **Test Organization**: Well-structured test modules (`get_row`, `get_column`, etc.)
-
-## Code Quality Features
-
-### **Input Validation Pipeline**
 ```rust
-// Human player input flow:
-get_raw_input() -> parse_input() -> is_valid_move() -> place()
-
-// AI player input flow:
-find_best_move() -> InputType::Coord() -> is_valid_move() -> place()
+fn minimax(&self, board: &Board, players_info: &PlayersInfo, 
+           depth: i8, is_maximizer: bool) -> i8
 ```
 
-### **Error Propagation**
-- `InputError::InvalidBoardError(BoardError)` wrapping preserves error context
-- Display traits provide user-friendly error messages
-- Input retry loops handle errors gracefully
+- Looks ahead at all possible moves and counter-moves
+- Picks moves that are best for the AI while assuming the human plays optimally
+- Prefers quicker wins over slower ones
+- Helped me understand recursive thinking and basic game theory
 
-### **Extensibility Points**
-- `AIStrategy` enum allows multiple AI implementations
-- `PlayerType` enum supports Local, AI, and Remote players
-- Trait-based design enables easy addition of new player types
+*I haven't added alpha-beta pruning yet - that's on my list!*
+
+### **Board Design**
+- Should, without too much additional code, work with different square board sizes (though I only tested 3x3)
+
+### **Game Flow**
+- Main game loop handles turns pretty ok, though an even-based approach would be better (and necessary once we get to multiplayer and graphics)
+- Detects wins and draws properly
+- Keeps game state separate from player logic
+- Lets players retry when they enter invalid moves
+
+*I'm thinking about trying an event-based approach next time.*
+
+## What This Project Helped Me Practice
+
+### **Rust Fundamentals**
+- **Ownership & Borrowing**: Getting comfortable with Rust's memory management
+- **Pattern Matching**: Using `match` for control flow and error handling
+- **Error Handling**: Working with `Result<T, E>`, which is a cool concept
+- **Traits**: Using trait objects like `Box<dyn PlayerController>` for polymorphism
+- **Testing**: Writing unit tests for different modules
+
+### **Code Organization**
+- **Modular Design**: Separating concerns across different modules, pretty much
+- **Clean Interfaces**: Keeping dependencies clear and minimal - I'd rather do hard things myself than use other peoples work
+- **Error Strategy**: Building validation and user feedback into the design - largely
+- **Extensibility**: Making it easier to add features later
+- **Custom Iterators**: Implementing iteration for `PlayerList` - that was fun.
+
+### **Algorithms**
+- **Minimax**: My first real game AI algorithm - took me a while to understand!
+- **Recursion**: Exploring game trees and state spaces
+- **Validation Logic**: Checking board dimensions and move validity
+
+### **Testing Approach**
+- **Unit Coverage**: Testing core functionality, though minimax was not tested
+- **Edge Cases**: Handling boundary conditions and error states
+- **Test Structure**: Organizing tests into logical modules
 
 ## How to Run This Thing
 
@@ -173,12 +182,12 @@ cargo run --release
 4. Type `help` to see the board layout
 5. Type `exit` to quit the game
 
-## Future Enhancements
+## What I Want to Build Next
 
-The modular architecture makes it easy to extend:
+The way I structured things should make these additions pretty straightforward:
 
-- **Restarting the Game**: Allow players to restart the game, and have this part of the game loop
-- **Network Multiplayer**: Add `PlayerType::Remote` implementation
-- **AI Optimization**: Implement alpha-beta pruning 
-- **GUI Interface**: Using SDL or Bevy
-- **Save/Load**: Game state serialization
+- **Game Restart**: Let players start a new game without exiting
+- **Network Play**: Add remote multiplayer (this one might be tricky!)
+- **Better AI**: Implement alpha-beta pruning to make minimax faster
+- **GUI Version**: Maybe try Bevy or another Rust graphics library
+- **Save Games**: Serialize game state so you can resume later
