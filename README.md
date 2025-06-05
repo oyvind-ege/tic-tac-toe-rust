@@ -161,7 +161,7 @@ fn minimax(&self, board: &Board, players_info: &PlayersInfo,
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/oyvind-ege/tic-tac-toe-rust.git
 cd tictactoe
 
 # Run the game
