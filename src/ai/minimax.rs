@@ -1,4 +1,5 @@
 use std::cmp;
+use std::fmt::Display;
 
 use crate::board::*;
 use crate::controller::*;
@@ -10,7 +11,7 @@ pub struct AIMinimax {}
 impl PlayerController for AIMinimax {
     fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
         let players_info = gamestate.players().get_players_piece_info();
-        let best_move = self.find_best_move(&gamestate.board(), &players_info);
+        let best_move = self.find_best_move(gamestate.board(), &players_info);
         println!("Best move is: {best_move}");
         Ok(InputType::Coord(best_move))
     }
@@ -32,6 +33,12 @@ impl PartialOrd for MiniMaxMoveAndScore {
     }
 }
 
+impl Display for MiniMaxMoveAndScore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Move {} with a score of {}", self.0, self.1)
+    }
+}
+
 impl AIMinimax {
     pub fn new() -> AIMinimax {
         AIMinimax {}
@@ -47,19 +54,11 @@ impl AIMinimax {
         for &move_pos in &possible_moves {
             temporary_board.modify_at_cell(move_pos, CellState::Player(players_info.ai_piece));
 
-            let score = self.minimax(
-                move_pos,
-                &temporary_board,
-                players_info,
-                players_info.player_piece, // Next player to move
-                false,                     // AI just moved, so now minimize
-            );
+            let score = self.minimax(&temporary_board, players_info, 0, false);
 
-            if let Some(move_score) = score {
-                if move_score.1 > best_score {
-                    best_score = move_score.1;
-                    best_move = move_pos;
-                }
+            if score > best_score {
+                best_score = score;
+                best_move = move_pos;
             }
             // Resetting the board so we don't have to clone multiple times.
             temporary_board.modify_at_cell(move_pos, CellState::Empty);
@@ -70,77 +69,51 @@ impl AIMinimax {
 
     fn minimax(
         &self,
-        last_move: usize,
         board: &Board,
         players_info: &PlayersInfo,
-        piece_to_move: u8,
+        depth: i8,
         is_maximizer: bool,
-    ) -> Option<MiniMaxMoveAndScore> {
-        const DEFAULT_NEGATIVE_SCORE: i8 = -128;
-        const DEFAULT_POSITIVE_SCORE: i8 = 127;
+    ) -> i8 {
+        const DEFAULT_NEGATIVE_SCORE: i8 = i8::MIN;
+        const DEFAULT_POSITIVE_SCORE: i8 = i8::MAX;
         const WINNING_MOVE_SCORE: i8 = 10;
         const LOSING_MOVE_SCORE: i8 = -10;
         const DRAW_MOVE_SCORE: i8 = 0;
 
-        let next_piece_to_move = if piece_to_move == players_info.ai_piece {
-            players_info.player_piece
-        } else {
-            players_info.ai_piece
-        };
-
         let victor = board.check_for_victory();
         if victor.is_some() || board.is_full() {
             if let Some(winning_piece) = victor {
-                // find out winner
                 if winning_piece == CellState::Player(players_info.ai_piece) {
-                    return Some(MiniMaxMoveAndScore(last_move, WINNING_MOVE_SCORE));
+                    return WINNING_MOVE_SCORE - depth;
                 } else {
-                    return Some(MiniMaxMoveAndScore(last_move, LOSING_MOVE_SCORE));
+                    return LOSING_MOVE_SCORE + depth;
                 }
             }
-            return Some(MiniMaxMoveAndScore(last_move, DRAW_MOVE_SCORE));
+            return DRAW_MOVE_SCORE;
         }
-
-        let possible_state_list =
-            self.get_possible_states_from_state(board, CellState::Player(next_piece_to_move));
-
-        if possible_state_list.is_empty() {
-            return None;
-        }
-
-        let mut best;
 
         if is_maximizer {
-            best = MiniMaxMoveAndScore(last_move, DEFAULT_NEGATIVE_SCORE);
-            for (state, attempted_move) in possible_state_list {
-                // state must here be a board with a given move already populated
-                // TODO: Add (Board, Move) tuple and make this the return value of get_possible_states
-                let new_best = self.minimax(
-                    attempted_move,
-                    &state,
-                    players_info,
-                    next_piece_to_move,
-                    false,
-                );
+            let mut best = DEFAULT_NEGATIVE_SCORE;
+            let possible_state_list = self
+                .get_possible_states_from_state(board, CellState::Player(players_info.ai_piece));
+            for (state, _) in possible_state_list {
+                let new_best = self.minimax(&state, players_info, depth + 1, false);
 
-                best = cmp::max(best, new_best?)
+                best = cmp::max(best, new_best);
             }
+            best
         } else {
-            best = MiniMaxMoveAndScore(last_move, DEFAULT_POSITIVE_SCORE);
-            for (state, attempted_move) in possible_state_list {
-                best = cmp::min(
-                    best,
-                    self.minimax(
-                        attempted_move,
-                        &state,
-                        players_info,
-                        next_piece_to_move,
-                        true,
-                    )?,
-                )
+            let mut best = DEFAULT_POSITIVE_SCORE;
+            let possible_state_list = self.get_possible_states_from_state(
+                board,
+                CellState::Player(players_info.player_piece),
+            );
+
+            for (state, _) in possible_state_list {
+                best = cmp::min(best, self.minimax(&state, players_info, depth + 1, true))
             }
+            best
         }
-        Some(best)
     }
 
     fn get_possible_states_from_state(
@@ -157,5 +130,29 @@ impl AIMinimax {
         }
 
         possible_states
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    mod test_ordination {
+        use super::*;
+
+        #[test]
+        fn basic() {
+            let mm = MiniMaxMoveAndScore(0, 8);
+            let mm2 = MiniMaxMoveAndScore(0, 9);
+
+            assert!(mm < mm2);
+        }
+
+        #[test]
+        fn reversed() {
+            let mm = MiniMaxMoveAndScore(0, 11);
+            let mm2 = MiniMaxMoveAndScore(0, 9);
+
+            assert!(mm > mm2);
+        }
     }
 }

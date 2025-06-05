@@ -56,11 +56,15 @@ impl GameState<'_> {
                     }
                 }
             }
+            if self.board.is_full() {
+                break;
+            }
             if self.exit_wanted {
                 break;
             }
         }
         self.check_for_victor();
+        self.check_for_draw();
     }
 
     fn check_for_victor(&mut self) {
@@ -73,6 +77,13 @@ impl GameState<'_> {
             }
             self.board.render(self);
             println!("{victor_name} is the victor!");
+            self.exit_wanted = true;
+        }
+    }
+
+    fn check_for_draw(&mut self) {
+        if self.board.is_full() {
+            println!("A draw.");
             self.exit_wanted = true;
         }
     }
