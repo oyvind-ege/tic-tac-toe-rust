@@ -21,7 +21,17 @@ pub enum Diagonal {
 
 #[derive(Debug, Clone)]
 pub enum BoardError {
-    MoveError(String),
+    CellOccupied(usize),
+    OutOfBounds(usize),
+}
+
+impl std::fmt::Display for BoardError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BoardError::CellOccupied(i) => write!(f, "{i} is not a legal move"),
+            BoardError::OutOfBounds(i) => write!(f, "Move {i} would be out of bounds"),
+        }
+    }
 }
 
 const BOARD_STANDARD_WIDTH: usize = 3;
@@ -50,15 +60,18 @@ impl Board {
         self.data.len()
     }
 
-    pub fn place(&mut self, index: usize, piece_to_place: u8) -> Result<(), BoardError> {
-        if self.data[index] != CellState::Empty {
-            Err(BoardError::MoveError(
-                "Invalid move: Cell already occupied".to_string(),
-            ))
-        } else {
-            self.data[index] = CellState::Player(piece_to_place);
-            Ok(())
+    pub fn is_valid_move(&self, index: usize) -> Result<(), BoardError> {
+        if index > self.len() - 1 {
+            return Err(BoardError::OutOfBounds(index));
+        } else if self.data[index] != CellState::Empty {
+            return Err(BoardError::CellOccupied(index));
         }
+        Ok(())
+    }
+
+    pub fn place(&mut self, index: usize, piece_to_place: u8) -> Result<(), BoardError> {
+        self.data[index] = CellState::Player(piece_to_place);
+        Ok(())
     }
 
     pub fn render(&self, game: &GameState) {
@@ -219,7 +232,6 @@ impl Board {
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     mod get_row {
         use super::*;
@@ -456,7 +468,6 @@ mod tests {
             );
         }
     }
-
 
     mod new_from {
         use super::*;

@@ -56,19 +56,14 @@ impl InputController for LocalPlayer {
             val if val == "exit" || val == "Exit" || val == "EXIT" => Ok(InputType::Exit),
             val if val.parse::<usize>().is_ok() => {
                 let parsed_number = val.parse::<usize>().expect("Could not parse input value.");
-                self.validate_input(parsed_number, board_info)?;
-                Ok(InputType::Coord(parsed_number))
-            }
 
+                match board_info.is_valid_move(parsed_number) {
+                    Ok(_) => Ok(InputType::Coord(parsed_number)),
+                    Err(e) => Err(InputError::InvalidBoardError(e)),
+                }
+            }
             _ => Err(InputError::InvalidCommand),
         }
-    }
-
-    fn validate_input(&self, input: usize, board_info: &Board) -> Result<(), InputError> {
-        if input > board_info.len() - 1 {
-            return Err(InputError::InputTooLarge);
-        }
-        Ok(())
     }
 }
 
