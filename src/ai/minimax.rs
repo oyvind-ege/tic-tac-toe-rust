@@ -42,8 +42,9 @@ impl AIMinimax {
         let mut best_move = possible_moves[0];
         let mut best_score = i8::MIN;
 
+        let mut temporary_board = board.clone();
+
         for &move_pos in &possible_moves {
-            let mut temporary_board = board.clone();
             temporary_board.modify_at_cell(move_pos, CellState::Player(players_info.ai_piece));
 
             let score = self.minimax(
@@ -61,6 +62,7 @@ impl AIMinimax {
                 }
             }
             // Resetting the board so we don't have to clone multiple times.
+            temporary_board.modify_at_cell(move_pos, CellState::Empty);
         }
 
         best_move
