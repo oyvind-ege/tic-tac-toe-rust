@@ -17,28 +17,6 @@ impl PlayerController for AIMinimax {
     }
 }
 
-/// Represents (move, score) tuple, where move is usize and score (i8) is the score of that move
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
-struct MiniMaxMoveAndScore(usize, i8);
-
-impl Ord for MiniMaxMoveAndScore {
-    fn cmp(&self, other: &Self) -> cmp::Ordering {
-        self.1.cmp(&other.1)
-    }
-}
-
-impl PartialOrd for MiniMaxMoveAndScore {
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Display for MiniMaxMoveAndScore {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Move {} with a score of {}", self.0, self.1)
-    }
-}
-
 impl AIMinimax {
     pub fn new() -> AIMinimax {
         AIMinimax {}
@@ -130,29 +108,5 @@ impl AIMinimax {
         }
 
         possible_states
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    mod test_ordination {
-        use super::*;
-
-        #[test]
-        fn basic() {
-            let mm = MiniMaxMoveAndScore(0, 8);
-            let mm2 = MiniMaxMoveAndScore(0, 9);
-
-            assert!(mm < mm2);
-        }
-
-        #[test]
-        fn reversed() {
-            let mm = MiniMaxMoveAndScore(0, 11);
-            let mm2 = MiniMaxMoveAndScore(0, 9);
-
-            assert!(mm > mm2);
-        }
     }
 }
