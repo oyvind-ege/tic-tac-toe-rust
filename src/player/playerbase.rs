@@ -1,4 +1,5 @@
 use crate::ai::minimax::AIMinimax;
+use crate::ai::AIStrategy;
 use crate::board::Board;
 use crate::controller::*;
 use crate::GameState;
@@ -16,11 +17,6 @@ pub struct Player<'a> {
     pub encoded: u8,
     ptype: PlayerType,
     pub controller: Box<dyn PlayerController>,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub enum AIStrategy {
-    Minimax,
 }
 
 pub struct LocalPlayer {}
