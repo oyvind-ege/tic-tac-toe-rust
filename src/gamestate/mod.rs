@@ -41,7 +41,7 @@ impl GameState<'_> {
                         self.board.render_help();
                     }
                     Ok(InputType::Coord(coord)) => {
-                        let _ = self.board.place(coord, player.encoded);
+                        let _ = self.board.place(coord, player.player_piece);
                         break;
                     }
                     Ok(InputType::Exit) => {
@@ -71,7 +71,7 @@ impl GameState<'_> {
         if let Some(victor_encoded) = self.board.check_for_victory() {
             let mut victor_name: &str = "";
             for p in self.players.iter() {
-                if victor_encoded == CellState::Player(p.encoded) {
+                if victor_encoded == CellState::Player(p.player_piece) {
                     victor_name = p.name;
                 }
             }

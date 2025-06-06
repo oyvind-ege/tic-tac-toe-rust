@@ -52,9 +52,9 @@ impl<'a> PlayerList<'a> {
         if self.player_1.player_type() == PlayerType::Local
             || self.player_1.player_type() == PlayerType::Remote
         {
-            self.player_2.encoded
+            self.player_2.player_piece
         } else {
-            self.player_1.encoded
+            self.player_1.player_piece
         }
     }
 
@@ -70,9 +70,9 @@ impl<'a> PlayerList<'a> {
         if self.player_1.player_type() == PlayerType::Local
             || self.player_1.player_type() == PlayerType::Remote
         {
-            self.player_1.encoded
+            self.player_1.player_piece
         } else {
-            self.player_2.encoded
+            self.player_2.player_piece
         }
     }
 

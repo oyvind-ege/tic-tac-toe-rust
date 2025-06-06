@@ -83,7 +83,7 @@ impl Board {
                     CellState::Empty => print!(" "),
                     CellState::Player(piece) => {
                         for p in game.players().iter() {
-                            if *piece == p.encoded {
+                            if *piece == p.player_piece {
                                 print!("{}", p.name);
                             }
                         }

@@ -14,7 +14,7 @@ pub enum PlayerType {
 
 pub struct Player<'a> {
     pub name: &'a str,
-    pub encoded: u8,
+    pub player_piece: u8,
     player_type: PlayerType,
     pub controller: Box<dyn PlayerController>,
 }
@@ -22,10 +22,10 @@ pub struct Player<'a> {
 pub struct LocalPlayer {}
 
 impl<'a> Player<'a> {
-    pub fn new(name: &'a str, encoded: u8, player_type: PlayerType) -> Player<'a> {
+    pub fn new(name: &'a str, player_piece: u8, player_type: PlayerType) -> Player<'a> {
         Player {
             name,
-            encoded,
+            player_piece,
             player_type,
             controller: match player_type {
                 PlayerType::Local => Box::new(LocalPlayer {}),
