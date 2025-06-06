@@ -2,11 +2,27 @@
 
 A command-line tic-tac-toe game I built while learning Rust. You can play against an AI opponent that uses the minimax algorithm to make optimal moves.
 
-## What It Does
+[!NOTE]
+- This project is almost exclusively written by me, and not by AI. I have, given the times we live in, used Claude Sonnet 4 via [Aider](https://aider.chat/) for advice and feedback during development, and it sometimes made commits which I think I have largely reverted. Overall, I am rather skeptical of AI because it very often confidently halucinates, and suggests code which does not work. But for simple tasks like removing irrelevant tests at scale, it is great.
 
-- **Play against the computer** - the AI uses minimax to make good moves
-- **Clean code structure** - I tried to organize things in a way that makes sense
-- **Room to grow** - designed as best as I could, so I can add new features later
+## Features (and those missing)
+
+- [x] **Play against the computer** - the AI uses the [Minimax algorithm](https://www.neverstopbuilding.com/blog/minimax) to make optimal moves. If you lose against this AI, you've made a suboptimal move!
+    - [] *Alpha/Beta pruning* - An optimization that discards large parts of the AI state tree
+    - [] *Depth limitation* - Currently, the AI minimax algorithm will traverse the entire tree until a terminal state has been reached, regardless of how "deep" it is. For a 3x3 board, this is fine, but if I decide to truly support larger boards, this needs to change (along with alpha/beta pruning)
+- [x] **3x3 game board** - Supports and is tested with a 3x3 game board, but with some extensibility for a larger game board.
+- [X] **Help and exit functionality in game loop** - Luckily, you can actually quit the game, and get basic help on how to not suck.
+
+
+### Larger things I work on right now
+
+- [] **Event-based / Pub-sub architecture** - The end users don't care, but would be cool to do and will set me up for multiplayer and graphics down the line.
+
+### Soon?
+
+- [] **Multiplayer** - High on my list of wants. It will help me learn networking!
+- [] **Graphics** - Also high on my list. Either with [SDL2](https://github.com/Rust-SDL2/rust-sdl2), or with a framework like [Tauri](https://v2.tauri.app/) that would allow me to write frontend in React or Svelte.
+- [] **4x4 or 5x5 boards** - May or may not do this. I don't think it will be difficult to achieve.
 
 ## Architecture
 
@@ -15,10 +31,10 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 ```
 src/
 ├── main.rs              # Entry point and game initialization
-├── gamestate/           # Game state management and main game loop
+├── gamestate/           # Game state structure and main game loop logic
 ├── board.rs             # Board representation and game logic
 ├── player/              # Player management and types
-│   ├── playerbase.rs    # Player definitions and controller traits
+│   ├── base_player.rs    # Player definitions and controller traits
 │   └── playerlist.rs    # Player collection and iteration
 ├── controller.rs        # Input handling and validation traits
 └── ai/                  # AI implementation
@@ -29,17 +45,15 @@ src/
 ### How I Structured Things
 
 #### **Using Traits for Flexibility**
-Traits is the Rust equivalent of interfaces. I have a couple in my code: 
+Traits is the Rust equivalent of interfaces. I have a couple in my code, mainly for the learning experience:
 
-- `PlayerController` trait lets me handle human and AI players the same way
-- `InputController` trait makes it easy to add different input methods later
-- Kept human and AI logic separate but consistent
+- `PlayerController` trait is a layer of indirection between the GameState core structure(class) and agents that can interact with the game
+- `InputController` trait, which provides a layer of indirection which may later support mouse input and whatnot
 
-This might be overengineered, and I am not entirely convinced myself, but it made for fun learning.
-
+This might very well be overengineered, but I don't care!
 
 #### **Enums**
-I love enums. Here are some of mine:
+I love enums, because they ensure that thing is one of a set of things, at compile-time. Here are some of mine:
 
 ```rust
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -61,16 +75,19 @@ pub enum BoardError {
 }
 ```
 
+I initially used basic unsigned 8-bit integers (u8) as the Cell representation, but effectively decided to use a CellState enum so that I could enforce either Empty or Player-occupied cells.
+Plus, using enums makes the code more self-explanatory!
+
 #### **Error Handling**
-- Custom error types (`BoardError`, `InputError`) with helpful messages
-- Input validation happens primarily on the human player side when parsing user input
-    - I assume AI never suggests and out-of-bounds move, or a move on a non-empty cell
+
+I am not entirely happy yet. Working on making error handling more standardized and idiomatic. But so far I have:
+
+- Custom error types (`BoardError`, `InputError`)
 - Tries to give useful feedback when things go wrong
 
-There is still some work to be done here. I am overall not happy with the error handling patterns.
-
 #### **Example: Handling User Input**
-I kept the validation flow straightforward:
+I kept the validation flow straightforward. Input validation happens primarily on the human player side when parsing user input.
+I assume AI never suggests an out-of-bounds move, or a move on a non-empty cell, because of the implementation.
 
 ```rust
 // Human player input flow:
@@ -112,21 +129,6 @@ fn minimax(&self, board: &Board, players_info: &PlayersInfo,
 - Picks moves that are best for the AI while assuming the human plays optimally
 - Prefers quicker wins over slower ones
 - Helped me understand recursive thinking and basic game theory
-
-*I haven't added alpha-beta pruning yet - that's on my list!*
-
-### **Board Design**
-- Should, without too much additional code, work with different square board sizes (though I only tested 3x3)
-
-### **Game Flow**
-- Main game loop handles turns pretty ok, though an even-based approach would be better (and necessary once we get to multiplayer and graphics)
-- Detects wins and draws properly
-- Keeps game state separate from player logic
-- Lets players retry when they enter invalid moves
-
-*I'm thinking about trying an event-based approach next time.*
-
-## What This Project Helped Me Practice
 
 ### **Rust Fundamentals**
 - **Ownership & Borrowing**: Getting comfortable with Rust's memory management
@@ -181,13 +183,3 @@ cargo run --release
 3. The AI will automatically make its move (Y)
 4. Type `help` to see the board layout
 5. Type `exit` to quit the game
-
-## What I Want to Build Next
-
-The way I structured things should make these additions pretty straightforward:
-
-- **Game Restart**: Let players start a new game without exiting
-- **Network Play**: Add remote multiplayer (this one might be tricky!)
-- **Better AI**: Implement alpha-beta pruning to make minimax faster
-- **GUI Version**: Maybe try Bevy or another Rust graphics library
-- **Save Games**: Serialize game state so you can resume later
