@@ -2,6 +2,8 @@
 
 A command-line tic-tac-toe game I built while learning Rust. You can play against an AI opponent that uses the minimax algorithm to make optimal moves.
 
+<img width="603" alt="Screenshot 2025-06-06 at 10 51 16" src="https://github.com/user-attachments/assets/0229ef62-ea85-45b5-989a-e53d520fd2c9" />
+
 >[!NOTE]
 >This project is almost exclusively written by me, and not by AI. 
 > I have used Claude Sonnet 4 via [Aider](https://aider.chat/) for advice and feedback during development, and it sometimes made commits which I think I have largely reverted.
