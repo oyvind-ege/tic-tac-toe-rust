@@ -4,6 +4,7 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 
 <img width="603" alt="Screenshot 2025-06-06 at 10 53 11" src="https://github.com/user-attachments/assets/76c5007f-447d-4c82-8046-445bec9c8322" />
 
+## On the use of LLMs
 >[!NOTE]
 >This project is almost exclusively written by me, and not by AI. 
 > I have used Claude Sonnet 4 via [Aider](https://aider.chat/) for advice and feedback during development, and it sometimes made commits which I think I have largely reverted.
@@ -11,8 +12,6 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 ## Features (and those missing)
 
 - [x] **Play against the computer** - the AI uses the [Minimax algorithm](https://www.neverstopbuilding.com/blog/minimax) to make optimal moves. If you lose against this AI, you've made a suboptimal move!
-    - [ ] *Alpha/Beta pruning* - An optimization that discards large parts of the AI state tree
-    - [ ] *Depth limitation* - Currently, the AI minimax algorithm will traverse the entire tree until a terminal state has been reached, regardless of how "deep" it is. For a 3x3 board, this is fine, but if I decide to truly support larger boards, this needs to change (along with alpha/beta pruning)
 - [x] **3x3 game board** - Supports and is tested with a 3x3 game board, but with some extensibility for a larger game board.
 - [X] **Help and exit functionality in game loop** - Luckily, you can actually quit the game, and get basic help on how to not suck.
 
@@ -23,6 +22,9 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 
 ### Soon?
 
+- [ ] **Optimizing AI** - It works, but for larger boards it can be a problem. Here are some optimizations I can do:
+    - [ ] *Alpha/Beta pruning* - An optimization that discards large parts of the AI state tree
+    - [ ] *Depth limitation* - Currently, the AI minimax algorithm will traverse the entire tree until a terminal state has been reached, regardless of how "deep" it is. For a 3x3 board, this is fine, but if I decide to truly support larger boards, this needs to change (along with alpha/beta pruning)
 - [ ] **Multiplayer** - High on my list of wants. It will help me learn networking!
 - [ ] **Graphics** - Also high on my list. Either with [SDL2](https://github.com/Rust-SDL2/rust-sdl2), or with a framework like [Tauri](https://v2.tauri.app/) that would allow me to write frontend in React or Svelte.
 - [ ] **4x4 or 5x5 boards** - May or may not do this. I don't think it will be difficult to achieve.
