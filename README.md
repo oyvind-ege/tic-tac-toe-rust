@@ -2,7 +2,8 @@
 
 A command-line tic-tac-toe game I built while learning Rust. You can play against an AI opponent that uses the minimax algorithm to make optimal moves.
 
-<img width="603" alt="Screenshot 2025-06-06 at 10 51 47" src="https://github.com/user-attachments/assets/606a5420-daf8-4de4-a2ef-82e202f2ca9b" />
+<img width="603" alt="Screenshot 2025-06-06 at 10 53 11" src="https://github.com/user-attachments/assets/76c5007f-447d-4c82-8046-445bec9c8322" />
+
 
 >[!NOTE]
 >This project is almost exclusively written by me, and not by AI. 
