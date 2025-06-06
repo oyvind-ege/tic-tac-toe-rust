@@ -4,11 +4,9 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 
 <img width="603" alt="Screenshot 2025-06-06 at 10 53 11" src="https://github.com/user-attachments/assets/76c5007f-447d-4c82-8046-445bec9c8322" />
 
-
 >[!NOTE]
 >This project is almost exclusively written by me, and not by AI. 
 > I have used Claude Sonnet 4 via [Aider](https://aider.chat/) for advice and feedback during development, and it sometimes made commits which I think I have largely reverted.
-> Overall, I am skeptical of AI. It confidently halucinates, and suggests code which does not work. But for simple tasks like removing irrelevant tests at scale, it is great.
 
 ## Features (and those missing)
 
