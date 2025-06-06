@@ -1,5 +1,5 @@
 use crate::ai::AIStrategy;
-use crate::player::playerbase::*;
+use crate::player::base_player::*;
 
 pub struct PlayerList<'a> {
     player_1: Player<'a>,

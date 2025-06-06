@@ -1,2 +1,2 @@
-pub mod playerbase;
+pub mod base_player;
 pub mod playerlist;
