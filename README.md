@@ -90,7 +90,7 @@ I am not entirely happy yet. Working on making error handling more standardized 
 - Custom error types (`BoardError`, `InputError`)
 - Tries to give useful feedback when things go wrong
 
-#### **Example: Handling User Input**
+#### **Input validation - for AI and Humans **
 I kept the validation flow straightforward. Input validation happens primarily on the human player side when parsing user input.
 I assume AI never suggests an out-of-bounds move, or a move on a non-empty cell, because of the implementation.
 
