@@ -9,7 +9,7 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 >This project is almost exclusively written by me, and not by AI. 
 > I have used Claude Sonnet 4 via [Aider](https://aider.chat/) for advice and feedback during development, and it sometimes made commits which I think I have largely reverted.
 
-## Features (and those missing)
+## Features
 
 - [x] **Play against the computer** - the AI uses the [Minimax algorithm](https://www.neverstopbuilding.com/blog/minimax) to make optimal moves. If you lose against this AI, you've made a suboptimal move!
 - [x] **3x3 game board** - Supports and is tested with a 3x3 game board, but with some extensibility for a larger game board.
