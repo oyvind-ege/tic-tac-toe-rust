@@ -129,35 +129,20 @@ This was my first time implementing the minimax algorithm. The AI explores possi
 fn minimax(&self, board: &Board, players_info: &PlayersInfo, 
            depth: i8, is_maximizer: bool) -> i8
 ```
-
-- Looks ahead at all possible moves and counter-moves
-- Picks moves that are best for the AI while assuming the human plays optimally
-- Prefers quicker wins over slower ones
 - Helped me understand recursive thinking and basic game theory
 
 ### **Rust Fundamentals**
-- **Ownership & Borrowing**: Getting comfortable with Rust's memory management
-- **Pattern Matching**: Using `match` for control flow and error handling
-- **Error Handling**: Working with `Result<T, E>`, which is a cool concept
-- **Traits**: Using trait objects like `Box<dyn PlayerController>` for polymorphism
-- **Testing**: Writing unit tests for different modules
-
-### **Code Organization**
-- **Modular Design**: Separating concerns across different modules, pretty much
-- **Clean Interfaces**: Keeping dependencies clear and minimal - I'd rather do hard things myself than use other peoples work
-- **Error Strategy**: Building validation and user feedback into the design - largely
-- **Extensibility**: Making it easier to add features later
-- **Custom Iterators**: Implementing iteration for `PlayerList` - that was fun.
-
-### **Algorithms**
-- **Minimax**: My first real game AI algorithm - took me a while to understand!
-- **Recursion**: Exploring game trees and state spaces
-- **Validation Logic**: Checking board dimensions and move validity
+- **Ownership & Borrowing**: Getting comfortable with Rust's memory management. I am still getting the hang of when to borrow and when to own.
+- **Pattern Matching**: Using `match` for control flow and error handling -- I can't wait for `if let` [chains to be stabilized](https://rust-lang.github.io/rfcs/2497-if-let-chains.html).
+- **Error Handling**: Working with `Result<T, E>`, which is a really useful concept that I far prefer over exception handling.
+- **Traits**: Using trait objects like `Box<dyn PlayerController>` for polymorphism. I now know what dynamic dispatch is.
+- **Custom Iterators**: Implementing iteration for `PlayerList`, just to get a hang of it.
 
 ### **Testing Approach**
-- **Unit Coverage**: Testing core functionality, though minimax was not tested
-- **Edge Cases**: Handling boundary conditions and error states
-- **Test Structure**: Organizing tests into logical modules
+- **Testing**: Writing unit tests for different modules. I especially like how easy it is to do this natively in Rust, instead of installing jest/pytest etc etc.
+- **TDD**: I know TDD is not hype these days, but I like understanding my domain first before I write code, and writing tests helps me think about what can go wrong.
+- **Test Structure**: I experimented with making nested submodules to improve readability.
+- **Unit Coverage**: Testing core functionality, though minimax was not tested. Not sure how to do that one effectively, and honestly I was too preoccupied with understanding the algorithm and how to make it work in Rust.
 
 ## How to Run This Thing
 
