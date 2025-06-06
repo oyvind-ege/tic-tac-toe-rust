@@ -69,6 +69,7 @@ impl Board {
         Ok(())
     }
 
+    /// Directly edits the game board at specified index, and adds the piece
     pub fn place(&mut self, index: usize, piece_to_place: u8) -> Result<(), BoardError> {
         self.data[index] = CellState::Player(piece_to_place);
         Ok(())
@@ -119,6 +120,9 @@ impl Board {
         self.data.iter().all(|c| *c != CellState::Empty)
     }
 
+    // I primarily use the following method in the minimax algorithm, in order to populate the board with a given move, and then revert back to the original board
+    /// A very sketchy method that directly mutates the value at cell index.
+    /// Use cautiously!
     pub fn modify_at_cell(&mut self, pos: usize, new_value: CellState) {
         self.data[pos] = new_value;
     }
@@ -132,6 +136,9 @@ impl Board {
             .collect()
     }
 
+    /// Get a copy of a row
+    ///
+    /// * `row_num`: the row number, counted from 0 and from the top
     pub fn get_row(&self, row_num: usize) -> Vec<CellState> {
         let start = row_num * self.width;
         let end = start + self.width;
@@ -141,10 +148,14 @@ impl Board {
         self.data[start..end].to_vec()
     }
 
+    /// Get all rows, from top to bottom
     pub fn get_all_rows(&self) -> Vec<Vec<CellState>> {
         (0..self.width).map(|n| self.get_row(n)).collect()
     }
 
+    /// Get a copy of a column
+    ///
+    /// * `col_num`: the index of the column you want, counting from 0 and from the left
     fn get_column(&self, col_num: usize) -> Vec<CellState> {
         if col_num > self.width - 1 {
             return vec![];
@@ -161,6 +172,9 @@ impl Board {
         (0..self.width).map(|n| self.get_column(n)).collect()
     }
 
+    /// Gets a copy of given diagonal from the Board.
+    /// A diagonal is either a Major diagonal, or a Minor diagonal (also called antidiagonal).
+    /// A major diagonal is from top left to bottom right; a Minor is from top right to bottom left
     pub fn get_diagonal(&self, diagonal: Diagonal) -> Vec<CellState> {
         let diagonal_num: usize = match diagonal {
             Diagonal::Major => 0,
@@ -177,13 +191,17 @@ impl Board {
             .collect()
     }
 
-    /// Return the encoded player symbol if they have won, None if no victor
+    // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
+    /// Checks if a player has won along either of the axes.
+    /// Relevant axes are: All rows, all columns, all diagonals.
+    /// The returned Option contains the CellState, with the winning Player
     pub fn check_for_victory(&self) -> Option<CellState> {
         self.has_horizontal_victor()
             .or_else(|| self.has_vertical_victor())
             .or_else(|| self.has_diagonal_victor())
     }
 
+    // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
     fn has_horizontal_victor(&self) -> Option<CellState> {
         for h in self.get_all_rows() {
             let has_victor = self.has_victor(&h);
@@ -194,6 +212,7 @@ impl Board {
         None
     }
 
+    // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
     fn has_vertical_victor(&self) -> Option<CellState> {
         for v in self.get_all_columns() {
             let has_victor = self.has_victor(&v);
@@ -205,11 +224,13 @@ impl Board {
         None
     }
 
+    // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
     fn has_diagonal_victor(&self) -> Option<CellState> {
         self.has_victor(&self.get_diagonal(Diagonal::Major))
             .or_else(|| self.has_victor(&self.get_diagonal(Diagonal::Minor)))
     }
 
+    // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
     fn has_victor(&self, vec: &[CellState]) -> Option<CellState> {
         let first = vec.first();
         first?;
@@ -229,6 +250,11 @@ impl Board {
     }
 }
 
+/*
+WARNING
+Tests below contain ugly CellState variants with Player numbers that will never exist in a real game.
+It is PURELY to make it easier to reason about the expected state, not as a representation of how a board would truly look like!
+*/
 #[cfg(test)]
 mod tests {
     use super::*;
