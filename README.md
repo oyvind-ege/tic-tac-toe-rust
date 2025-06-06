@@ -58,7 +58,7 @@ Traits is the Rust equivalent of interfaces. I have a couple in my code, mainly 
 This might very well be overengineered, but I don't care!
 
 #### **Enums**
-I love enums, because they ensure that a value is of a limited set of variants, at compile-time. Here are some of mine:
+I love enums, because they ensure that 'something' is of a limited set of variants, at compile-time. Here are some of mine:
 
 ```rust
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
