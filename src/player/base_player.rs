@@ -15,19 +15,19 @@ pub enum PlayerType {
 pub struct Player<'a> {
     pub name: &'a str,
     pub encoded: u8,
-    ptype: PlayerType,
+    player_type: PlayerType,
     pub controller: Box<dyn PlayerController>,
 }
 
 pub struct LocalPlayer {}
 
 impl<'a> Player<'a> {
-    pub fn new(name: &'a str, encoded: u8, ptype: PlayerType) -> Player<'a> {
+    pub fn new(name: &'a str, encoded: u8, player_type: PlayerType) -> Player<'a> {
         Player {
             name,
             encoded,
-            ptype,
-            controller: match ptype {
+            player_type,
+            controller: match player_type {
                 PlayerType::Local => Box::new(LocalPlayer {}),
                 PlayerType::AI(AIStrategy::Minimax) => Box::new(AIMinimax::new()),
                 PlayerType::Remote => {
@@ -39,7 +39,7 @@ impl<'a> Player<'a> {
     }
 
     pub fn player_type(&self) -> PlayerType {
-        self.ptype
+        self.player_type
     }
 }
 

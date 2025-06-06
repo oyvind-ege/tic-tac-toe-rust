@@ -41,8 +41,8 @@ impl<'a> Iterator for PlayerListIterator<'a> {
 impl<'a> Default for PlayerList<'a> {
     fn default() -> Self {
         PlayerList {
-            player_1: Player::new("x", 32, PlayerType::Local),
-            player_2: Player::new("y", 64, PlayerType::AI(AIStrategy::Minimax)),
+            player_1: Player::new("x", 1, PlayerType::Local),
+            player_2: Player::new("y", 2, PlayerType::AI(AIStrategy::Minimax)),
         }
     }
 }
