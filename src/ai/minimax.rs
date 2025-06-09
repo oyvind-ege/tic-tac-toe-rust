@@ -22,6 +22,8 @@ impl AIMinimax {
 
     fn find_best_move(&self, board: &Board, players_info: &PlayersInfo) -> usize {
         let possible_moves = board.get_positions_of_empty_cells();
+        // NOTE: We are at this point assuming the board is not full, quite simply due to the main game logic. See src/gamestate/mod.rs.
+        // the alternative is to wrap the return value of this function in an Option. That would require some changes to the core data flow.
         let mut best_move = possible_moves[0];
         let mut best_score = i8::MIN;
 
