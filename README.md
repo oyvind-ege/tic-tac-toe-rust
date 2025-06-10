@@ -31,7 +31,7 @@ A command-line tic-tac-toe game I built while learning Rust. You can play agains
 
 ## Architecture
 
-### Core Components
+### Core components
 
 ```
 src/
@@ -47,7 +47,7 @@ src/
     └── minimax.rs      # Minimax algorithm implementation
 ```
 
-### How I Structured Things
+### How I structured things
 
 #### **Using Traits for Flexibility**
 Traits is the Rust equivalent of interfaces. I have a couple in my code, mainly for the learning experience:
@@ -113,14 +113,7 @@ pub fn is_valid_move(&self, index: usize) -> Result<(), BoardError> {
 }
 ```
 
-#### **Keeping Things Organized**
-- Each module focuses largely on one main thing
-- Interfaces between parts are reasonably clean
-- Should be straightforward to add new player types or AI strategies
-
-I am still learning how to structure my Rust projects, but this works ish.
-
-## What I Learned Building This
+## What I learned
 
 ### **Implementing Minimax**
 This was my first time implementing the minimax algorithm. The AI explores possible game states to pick the best move:
@@ -138,13 +131,13 @@ fn minimax(&self, board: &Board, players_info: &PlayersInfo,
 - **Traits**: Using trait objects like `Box<dyn PlayerController>` for polymorphism. I now know what dynamic dispatch is.
 - **Custom Iterators**: Implementing iteration for `PlayerList`, just to get a hang of it.
 
-### **Testing Approach**
+### **Testing**
 - **Testing**: Writing unit tests for different modules. I especially like how easy it is to do this natively in Rust, instead of installing jest/pytest etc etc.
 - **TDD**: I know TDD is not hype these days, but I like understanding my domain first before I write code, and writing tests helps me think about what can go wrong.
 - **Test Structure**: I experimented with making nested submodules to improve readability.
 - **Unit Coverage**: Testing core functionality, though minimax was not tested. Not sure how to do that one effectively, and honestly I was too preoccupied with understanding the algorithm and how to make it work in Rust.
 
-## How to Run This Thing
+## How to run this
 
 ### Prerequisites
 - Rust 1.70+ (uses Rust 2024 edition)
@@ -166,7 +159,7 @@ cargo test
 cargo run --release
 ```
 
-### How to Play
+### How to play
 
 1. The game displays a numbered grid (0-8)
 2. Enter a number to place your piece (X)
