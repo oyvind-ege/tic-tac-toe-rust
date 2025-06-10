@@ -232,21 +232,20 @@ impl Board {
 
     // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
     fn has_victor(&self, vec: &[CellState]) -> Option<CellState> {
-        let first = vec.first();
-        first?;
-        match first {
-            Some(t) => match t {
-                CellState::Player(p) => {
-                    if vec.iter().all(|&x| x == CellState::Player(*p)) {
-                        Some(*first.unwrap())
-                    } else {
-                        None
-                    }
+        // Just checking to see if the symbol on the first cell is the same as all symbols in all cells
+        if let Some(first_cell) = vec.first() {
+            if let CellState::Player(player_piece) = first_cell {
+                if vec
+                    .iter()
+                    .all(|&board_cell| board_cell == CellState::Player(*player_piece))
+                {
+                    return Some(*first_cell);
+                } else {
+                    return None;
                 }
-                CellState::Empty => None,
-            },
-            None => None,
+            }
         }
+        None
     }
 }
 
