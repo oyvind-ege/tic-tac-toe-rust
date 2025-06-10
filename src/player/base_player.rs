@@ -51,9 +51,9 @@ impl InputController for LocalPlayer {
     }
 
     fn parse_input(&self, input: &str, board_info: &Board) -> Result<InputType, InputError> {
-        match input {
-            val if val == "help" || val == "Help" || val == "HELP" => Ok(InputType::Help),
-            val if val == "exit" || val == "Exit" || val == "EXIT" => Ok(InputType::Exit),
+        match input.to_lowercase().as_str() {
+            "help" => Ok(InputType::Help),
+            "exit" => Ok(InputType::Exit),
             val if val.parse::<usize>().is_ok() => {
                 let parsed_number = val.parse::<usize>().expect("Could not parse input value.");
 
