@@ -131,8 +131,13 @@ impl Board {
         self.data
             .iter()
             .enumerate()
-            .filter(|&(_, &cell)| cell == CellState::Empty)
-            .map(|(i, _)| i)
+            .filter_map(|(i, &cell)| {
+                if cell == CellState::Empty {
+                    Some(i)
+                } else {
+                    None
+                }
+            })
             .collect()
     }
 
