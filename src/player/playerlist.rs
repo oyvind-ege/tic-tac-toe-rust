@@ -30,10 +30,7 @@ impl<'a> Iterator for PlayerListIterator<'a> {
                 self.index += 1;
                 Some(&self.players.player_2)
             }
-            _ => {
-                self.index = 0;
-                None
-            }
+            _ => None,
         }
     }
 }
@@ -48,6 +45,16 @@ impl<'a> Default for PlayerList<'a> {
 }
 
 impl<'a> PlayerList<'a> {
+    pub fn get_piece_of_player_type(&self, player_type: PlayerType) -> u8 {
+        if self.player_1.player_type() == player_type {
+            self.player_1.player_piece
+        } else if self.player_2.player_type() == player_type {
+            self.player_2.player_piece
+        } else {
+            panic!("Attempted to get a player piece from a player_type that does not exist.");
+        }
+    }
+
     pub fn get_ai_player_piece(&self) -> u8 {
         if self.player_1.player_type() == PlayerType::Local
             || self.player_1.player_type() == PlayerType::Remote
