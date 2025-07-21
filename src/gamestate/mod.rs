@@ -106,7 +106,7 @@ impl GameState<'_> {
 pub(crate) struct GameReferee {}
 
 impl GameReferee {
-    /// Check to see if there is a winner, and return the winning piece if so
+    /// Checks to see if there is a winner on the Board, and returns the winning piece if so
     // TODO: It would be more semantic to return a Player, rather than PlayerPiece
     pub fn adjudicate(&self, board: &Board) -> Option<PlayerPiece> {
         self.rows_have_winner(board)

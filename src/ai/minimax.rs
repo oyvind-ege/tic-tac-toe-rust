@@ -7,6 +7,16 @@ use crate::GameState;
 
 pub struct AIMinimax {}
 
+/// Represents a Board State and the Move that made it possible
+struct BoardAfterMove((Board, usize));
+
+impl std::ops::Deref for BoardAfterMove {
+    type Target = Board;
+    fn deref(&self) -> &Self::Target {
+        &self.0 .0
+    }
+}
+
 impl PlayerController for AIMinimax {
     fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
         let players_info = gamestate.players().get_players_piece_info();
@@ -21,9 +31,11 @@ impl AIMinimax {
     }
 
     fn find_best_move(&self, game_state: &GameState, players_info: &PlayersInfo) -> usize {
-        let possible_moves = game_state.board().get_positions_of_empty_cells();
-        // NOTE: We are at this point assuming the board is not full, quite simply due to the main game logic. See src/gamestate/mod.rs.
-        // the alternative is to wrap the return value of this function in an Option. That would require some changes to the core data flow.
+        let possible_moves = game_state.board().get_indices_of_empty_cells();
+        /*
+        NOTE: We are at this point assuming the board is not full, quite simply due to the main game logic. See src/gamestate/mod.rs.
+        The alternative is to wrap the return value of this function in an Option. That would require some changes to the core data flow.
+        */
         let mut best_move = possible_moves[0];
         let mut best_score = i8::MIN;
 
@@ -48,20 +60,18 @@ impl AIMinimax {
     fn minimax(
         &self,
         game_state: &GameState,
-        board: &Board,
+        board_to_analyze: &Board,
         players_info: &PlayersInfo,
         depth: i8,
         is_maximizer: bool,
     ) -> i8 {
-        const DEFAULT_NEGATIVE_SCORE: i8 = i8::MIN;
-        const DEFAULT_POSITIVE_SCORE: i8 = i8::MAX;
         const WINNING_MOVE_SCORE: i8 = 10;
         const LOSING_MOVE_SCORE: i8 = -10;
         const DRAW_MOVE_SCORE: i8 = 0;
 
-        let victor = game_state.referee().adjudicate(board);
-        if victor.is_some() || board.is_full() {
-            if let Some(winning_piece) = victor {
+        let winner = game_state.referee().adjudicate(board_to_analyze);
+        if winner.is_some() || board_to_analyze.is_full() {
+            if let Some(winning_piece) = winner {
                 if winning_piece == players_info.ai_piece {
                     return WINNING_MOVE_SCORE - depth;
                 } else {
@@ -72,10 +82,12 @@ impl AIMinimax {
         }
 
         if is_maximizer {
-            let mut best = DEFAULT_NEGATIVE_SCORE;
-            let possible_board_states = self
-                .get_possible_states_from_state(board, CellState::Player(players_info.ai_piece));
-            for (board_state, _) in possible_board_states {
+            let mut best = i8::MIN;
+            let possible_board_states = self.get_possible_board_states_from_current_board(
+                board_to_analyze,
+                CellState::Player(players_info.ai_piece),
+            );
+            for board_state in possible_board_states {
                 let new_best =
                     self.minimax(game_state, &board_state, players_info, depth + 1, false);
 
@@ -83,13 +95,13 @@ impl AIMinimax {
             }
             best
         } else {
-            let mut best = DEFAULT_POSITIVE_SCORE;
-            let possible_board_states = self.get_possible_states_from_state(
-                board,
+            let mut best = i8::MAX;
+            let possible_board_states = self.get_possible_board_states_from_current_board(
+                board_to_analyze,
                 CellState::Player(players_info.player_piece),
             );
 
-            for (board_state, _) in possible_board_states {
+            for board_state in possible_board_states {
                 best = cmp::min(
                     best,
                     self.minimax(game_state, &board_state, players_info, depth + 1, true),
@@ -99,19 +111,19 @@ impl AIMinimax {
         }
     }
 
-    fn get_possible_states_from_state(
+    fn get_possible_board_states_from_current_board(
         &self,
-        from_state: &Board,
+        current_board: &Board,
         player_to_move: CellState,
-    ) -> Vec<(Board, usize)> {
-        let mut possible_states: Vec<(Board, usize)> = vec![];
-        let empties = from_state.get_positions_of_empty_cells();
-        for empty_cell_index in empties {
-            let mut new_state = from_state.clone();
-            new_state.modify_at_cell(empty_cell_index, player_to_move);
-            possible_states.push((new_state, empty_cell_index));
+    ) -> Vec<BoardAfterMove> {
+        let mut possible_board_states: Vec<BoardAfterMove> = vec![];
+        let all_possible_moves = current_board.get_indices_of_empty_cells();
+        for possible_move in all_possible_moves {
+            let mut new_state = current_board.clone();
+            new_state.modify_at_cell(possible_move, player_to_move);
+            possible_board_states.push(BoardAfterMove((new_state, possible_move)));
         }
 
-        possible_states
+        possible_board_states
     }
 }

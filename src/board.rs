@@ -167,7 +167,7 @@ impl Board {
     }
 
     /// Returns a vector of indices on the board that are empty
-    pub fn get_positions_of_empty_cells(&self) -> Vec<usize> {
+    pub fn get_indices_of_empty_cells(&self) -> Vec<usize> {
         self.data
             .iter()
             .enumerate()
