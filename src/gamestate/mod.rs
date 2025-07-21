@@ -1,9 +1,11 @@
 use crate::board::*;
 use crate::controller::*;
+use crate::player::base_player::Player;
 use crate::player::playerlist::*;
 
 pub struct GameState<'a> {
     board: Board,
+    winner: Option<Player<'a>>,
     exit_wanted: bool,
     players: PlayerList<'a>,
 }
@@ -12,6 +14,7 @@ impl GameState<'_> {
     pub fn new<'a>() -> GameState<'a> {
         GameState {
             board: Board::new(),
+            winner: None,
             players: PlayerList::default(),
             exit_wanted: false,
         }
