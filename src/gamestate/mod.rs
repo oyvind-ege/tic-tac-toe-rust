@@ -1,11 +1,11 @@
 use crate::board::*;
 use crate::controller::*;
-use crate::player::base_player::Player;
+use crate::player::base_player::PlayerPiece;
 use crate::player::playerlist::*;
 
 pub struct GameState<'a> {
     board: Board,
-    winner: Option<Player<'a>>,
+    referee: GameReferee,
     exit_wanted: bool,
     players: PlayerList<'a>,
 }
@@ -14,10 +14,22 @@ impl GameState<'_> {
     pub fn new<'a>() -> GameState<'a> {
         GameState {
             board: Board::new(),
-            winner: None,
+            referee: GameReferee::default(),
             players: PlayerList::default(),
             exit_wanted: false,
         }
+    }
+
+    pub fn board(&self) -> &Board {
+        &self.board
+    }
+
+    pub fn board_mut(&mut self) -> &mut Board {
+        &mut self.board
+    }
+
+    pub fn referee(&self) -> &GameReferee {
+        &self.referee
     }
 
     pub fn game_loop(&mut self) {
@@ -29,10 +41,6 @@ impl GameState<'_> {
 
     pub fn players(&self) -> &PlayerList {
         &self.players
-    }
-
-    pub fn board(&self) -> &Board {
-        &self.board
     }
 
     fn process_turn(&mut self) {
@@ -71,16 +79,16 @@ impl GameState<'_> {
     }
 
     fn check_for_winner(&mut self) {
-        if let Some(victor_encoded) = self.board.check_for_victory() {
-            let mut victor_name: &str = "";
+        if let Some(winning_piece) = self.referee.adjudicate(&self.board) {
+            let mut winner_name: &str = "";
             for p in self.players.iter() {
-                if victor_encoded == CellState::Player(p.player_piece) {
-                    victor_name = p.name;
+                if winning_piece == p.player_piece {
+                    winner_name = p.name;
                 }
             }
             // TODO: Move responsibility for rendering the winner to a separate object
             self.board.render(self);
-            println!("{victor_name} is the victor!");
+            println!("{winner_name} is the victor!");
             self.exit_wanted = true;
         }
     }
@@ -91,5 +99,59 @@ impl GameState<'_> {
             println!("A draw.");
             self.exit_wanted = true;
         }
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct GameReferee {}
+
+impl GameReferee {
+    /// Check to see if there is a winner, and return the winning piece if so
+    // TODO: It would be more semantic to return a Player, rather than PlayerPiece
+    pub fn adjudicate(&self, board: &Board) -> Option<PlayerPiece> {
+        self.rows_have_winner(board)
+            .or_else(|| self.columns_have_winner(board))
+            .or_else(|| self.diagonals_have_winner(board))
+    }
+
+    fn rows_have_winner(&self, board: &Board) -> Option<PlayerPiece> {
+        for row in board.get_all_rows() {
+            let winner = self.has_winner(&row);
+            if winner.is_some() {
+                return winner;
+            }
+        }
+        None
+    }
+
+    fn columns_have_winner(&self, board: &Board) -> Option<PlayerPiece> {
+        for column in board.get_all_columns() {
+            let winner = self.has_winner(&column);
+            if winner.is_some() {
+                return winner;
+            }
+        }
+
+        None
+    }
+
+    fn diagonals_have_winner(&self, board: &Board) -> Option<PlayerPiece> {
+        self.has_winner(&board.get_diagonal(Diagonal::Major))
+            .or_else(|| self.has_winner(&board.get_diagonal(Diagonal::Minor)))
+    }
+
+    fn has_winner(&self, slice: &[CellState]) -> Option<PlayerPiece> {
+        // Just checking to see if the symbol on the first cell is the same as all symbols in all cells
+        if let Some(CellState::Player(player_piece)) = slice.first() {
+            if slice
+                .iter()
+                .all(|&board_cell| board_cell == CellState::Player(*player_piece))
+            {
+                return Some(*player_piece);
+            } else {
+                return None;
+            }
+        }
+        None
     }
 }
