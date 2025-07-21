@@ -11,6 +11,9 @@ pub struct PlayerListIterator<'a> {
     index: usize,
 }
 
+/// This struct represents configuration information on the players.
+/// It is currently separate from the PlayerList, which is unfortunate.
+// TODO: Merge/redo this with PlayerList
 pub struct PlayersInfo {
     pub ai_piece: u8,
     pub player_piece: u8,

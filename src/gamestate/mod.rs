@@ -66,11 +66,11 @@ impl GameState<'_> {
                 break;
             }
         }
-        self.check_for_victor();
+        self.check_for_winner();
         self.check_for_draw();
     }
 
-    fn check_for_victor(&mut self) {
+    fn check_for_winner(&mut self) {
         if let Some(victor_encoded) = self.board.check_for_victory() {
             let mut victor_name: &str = "";
             for p in self.players.iter() {
@@ -78,6 +78,7 @@ impl GameState<'_> {
                     victor_name = p.name;
                 }
             }
+            // TODO: Move responsibility for rendering the winner to a separate object
             self.board.render(self);
             println!("{victor_name} is the victor!");
             self.exit_wanted = true;
@@ -86,6 +87,7 @@ impl GameState<'_> {
 
     fn check_for_draw(&mut self) {
         if self.board.is_full() {
+            //TODO: Remove rendering and state-setting from this function to make it "pure"
             println!("A draw.");
             self.exit_wanted = true;
         }

@@ -60,6 +60,7 @@ impl Board {
         self.data.len()
     }
 
+    /// Checks whther a move to a given index  on the board is valid.
     pub fn is_valid_move(&self, index: usize) -> Result<(), BoardError> {
         if index > self.len() - 1 {
             return Err(BoardError::OutOfBounds(index));
@@ -69,12 +70,14 @@ impl Board {
         Ok(())
     }
 
-    /// Directly edits the game board at specified index, and adds the piece
+    /// Directly edits the game board at specified index, and adds the piece.
+    // TODO: Do some error checking here, or redo the return value
     pub fn place(&mut self, index: usize, piece_to_place: u8) -> Result<(), BoardError> {
         self.data[index] = CellState::Player(piece_to_place);
         Ok(())
     }
 
+    // TODO: Move this responsibility to a separate module/object
     pub fn render(&self, game: &GameState) {
         println!();
         println!("The board currently looks like this:");
@@ -100,6 +103,7 @@ impl Board {
         println!();
     }
 
+    // TODO: This should not be part of the board object, but instead part of `GameState` or somesuch
     pub fn render_help(&self) {
         println!();
         println!("This is how you designate the board cells:");
@@ -116,6 +120,7 @@ impl Board {
         println!();
     }
 
+    /// Checks whether the board is full of `Player` pieces
     pub fn is_full(&self) -> bool {
         self.data.iter().all(|c| *c != CellState::Empty)
     }
@@ -127,6 +132,7 @@ impl Board {
         self.data[pos] = new_value;
     }
 
+    /// Returns a vector of indices on the board that are empty
     pub fn get_positions_of_empty_cells(&self) -> Vec<usize> {
         self.data
             .iter()
@@ -178,6 +184,7 @@ impl Board {
     }
 
     /// Gets a copy of given diagonal from the Board.
+    ///
     /// A diagonal is either a Major diagonal, or a Minor diagonal (also called antidiagonal).
     /// A major diagonal is from top left to bottom right; a Minor is from top right to bottom left
     pub fn get_diagonal(&self, diagonal: Diagonal) -> Vec<CellState> {
@@ -236,6 +243,7 @@ impl Board {
     }
 
     // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
+    /// Checks to see if all CellStates in `vec` contain a Player piece. If so, returns Some(player_piece)
     fn has_victor(&self, vec: &[CellState]) -> Option<CellState> {
         // Just checking to see if the symbol on the first cell is the same as all symbols in all cells
         if let Some(first_cell) = vec.first() {
