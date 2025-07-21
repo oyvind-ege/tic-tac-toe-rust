@@ -1,3 +1,6 @@
 /target
 .aider*
 gitlog
+.claude
+.helix
+build/
