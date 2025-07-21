@@ -15,8 +15,8 @@ pub struct PlayerListIterator<'a> {
 /// It is currently separate from the PlayerList, which is unfortunate.
 // TODO: Merge/redo this with PlayerList
 pub struct PlayersInfo {
-    pub ai_piece: u8,
-    pub player_piece: u8,
+    pub ai_piece: PlayerPiece,
+    pub player_piece: PlayerPiece,
 }
 
 // I am doing this primarily for fun and learning, and so I can iterate over players
@@ -41,14 +41,18 @@ impl<'a> Iterator for PlayerListIterator<'a> {
 impl<'a> Default for PlayerList<'a> {
     fn default() -> Self {
         PlayerList {
-            player_1: Player::new("x", 1, PlayerType::Local),
-            player_2: Player::new("y", 2, PlayerType::AI(AIStrategy::Minimax)),
+            player_1: Player::new("x", PlayerPiece::new(1), PlayerType::Local),
+            player_2: Player::new(
+                "y",
+                PlayerPiece::new(2),
+                PlayerType::AI(AIStrategy::Minimax),
+            ),
         }
     }
 }
 
 impl<'a> PlayerList<'a> {
-    pub fn get_piece_of_player_type(&self, player_type: PlayerType) -> u8 {
+    pub fn get_piece_of_player_type(&self, player_type: PlayerType) -> PlayerPiece {
         if self.player_1.player_type() == player_type {
             self.player_1.player_piece
         } else if self.player_2.player_type() == player_type {
@@ -58,7 +62,7 @@ impl<'a> PlayerList<'a> {
         }
     }
 
-    pub fn get_ai_player_piece(&self) -> u8 {
+    pub fn get_ai_player_piece(&self) -> PlayerPiece {
         if self.player_1.player_type() == PlayerType::Local
             || self.player_1.player_type() == PlayerType::Remote
         {
@@ -76,7 +80,7 @@ impl<'a> PlayerList<'a> {
     }
 
     // Not DRY
-    pub fn get_human_player_piece(&self) -> u8 {
+    pub fn get_human_player_piece(&self) -> PlayerPiece {
         if self.player_1.player_type() == PlayerType::Local
             || self.player_1.player_type() == PlayerType::Remote
         {

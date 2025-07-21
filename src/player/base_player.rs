@@ -4,6 +4,7 @@ use crate::board::Board;
 use crate::controller::*;
 use crate::GameState;
 use std::io;
+use synonym::Synonym;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum PlayerType {
@@ -12,9 +13,26 @@ pub enum PlayerType {
     Remote,
 }
 
+/// A Newtype representing a PlayerPiece.
+#[derive(Synonym)]
+pub struct PlayerPiece(u8);
+
+impl PlayerPiece {
+    pub fn new(value: u8) -> PlayerPiece {
+        PlayerPiece(value)
+    }
+}
+
+impl std::ops::Deref for PlayerPiece {
+    type Target = u8;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 pub struct Player<'a> {
     pub name: &'a str,
-    pub player_piece: u8,
+    pub player_piece: PlayerPiece,
     player_type: PlayerType,
     pub controller: Box<dyn PlayerController>,
 }
@@ -22,7 +40,7 @@ pub struct Player<'a> {
 pub struct LocalPlayer {}
 
 impl<'a> Player<'a> {
-    pub fn new(name: &'a str, player_piece: u8, player_type: PlayerType) -> Player<'a> {
+    pub fn new(name: &'a str, player_piece: PlayerPiece, player_type: PlayerType) -> Player<'a> {
         Player {
             name,
             player_piece,
