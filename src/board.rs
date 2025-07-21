@@ -1,5 +1,6 @@
 use crate::GameState;
-use std::f32;
+use std::{f32, ops::Deref};
+use synonym::Synonym;
 
 #[derive(Clone, Debug)]
 pub struct Board {
@@ -11,6 +12,39 @@ pub struct Board {
 pub enum CellState {
     Empty,
     Player(u8),
+}
+
+#[derive(PartialEq, Eq, Clone, Debug, Synonym)]
+pub struct BoardRow(Vec<CellState>);
+
+// We add this so that we can write more generic victory checker functions that act on Vec<CellState>
+impl Deref for BoardRow {
+    type Target = Vec<CellState>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(PartialEq, Eq, Clone, Debug, Synonym)]
+pub struct BoardColumn(Vec<CellState>);
+
+// We add this so that we can write more generic victory checker functions that act on Vec<CellState>
+impl Deref for BoardColumn {
+    type Target = Vec<CellState>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(PartialEq, Eq, Clone, Debug, Synonym)]
+pub struct BoardDiagonal(Vec<CellState>);
+
+// We add this so that we can write more generic victory checker functions that act on Vec<CellState>
+impl Deref for BoardDiagonal {
+    type Target = Vec<CellState>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -150,36 +184,38 @@ impl Board {
     /// Get a copy of a row
     ///
     /// * `row_num`: the row number, counted from 0 and from the top
-    pub fn get_row(&self, row_num: usize) -> Vec<CellState> {
+    pub fn get_row(&self, row_num: usize) -> BoardRow {
         let start = row_num * self.width;
         let end = start + self.width;
         if start > self.data.len() || end > self.data.len() {
-            return vec![];
+            return BoardRow(vec![]);
         }
-        self.data[start..end].to_vec()
+        BoardRow(self.data[start..end].to_vec())
     }
 
     /// Get all rows, from top to bottom
-    pub fn get_all_rows(&self) -> Vec<Vec<CellState>> {
+    pub fn get_all_rows(&self) -> Vec<BoardRow> {
         (0..self.width).map(|n| self.get_row(n)).collect()
     }
 
     /// Get a copy of a column
     ///
     /// * `col_num`: the index of the column you want, counting from 0 and from the left
-    fn get_column(&self, col_num: usize) -> Vec<CellState> {
+    fn get_column(&self, col_num: usize) -> BoardColumn {
         if col_num > self.width - 1 {
-            return vec![];
+            return BoardColumn(vec![]);
         }
-        self.data
-            .iter()
-            .skip(col_num)
-            .step_by(self.width)
-            .copied()
-            .collect()
+        BoardColumn(
+            self.data
+                .iter()
+                .skip(col_num)
+                .step_by(self.width)
+                .copied()
+                .collect(),
+        )
     }
 
-    pub fn get_all_columns(&self) -> Vec<Vec<CellState>> {
+    pub fn get_all_columns(&self) -> Vec<BoardColumn> {
         (0..self.width).map(|n| self.get_column(n)).collect()
     }
 
@@ -187,20 +223,22 @@ impl Board {
     ///
     /// A diagonal is either a Major diagonal, or a Minor diagonal (also called antidiagonal).
     /// A major diagonal is from top left to bottom right; a Minor is from top right to bottom left
-    pub fn get_diagonal(&self, diagonal: Diagonal) -> Vec<CellState> {
+    pub fn get_diagonal(&self, diagonal: Diagonal) -> BoardDiagonal {
         let diagonal_num: usize = match diagonal {
             Diagonal::Major => 0,
             Diagonal::Minor => 1,
         };
         let board_size_coefficient = self.width - 1;
         let step = (self.width + 1) / std::cmp::max(1, board_size_coefficient * diagonal_num);
-        self.data
-            .iter()
-            .skip(diagonal_num * board_size_coefficient)
-            .step_by(step)
-            .take(self.width)
-            .copied()
-            .collect()
+        BoardDiagonal(
+            self.data
+                .iter()
+                .skip(diagonal_num * board_size_coefficient)
+                .step_by(step)
+                .take(self.width)
+                .copied()
+                .collect(),
+        )
     }
 
     // TODO: Get rid of CellState as returned Option value, since it does not make conceptual sense.
@@ -291,7 +329,11 @@ mod tests {
 
             assert_eq!(
                 b.get_row(0),
-                vec![CellState::Empty, CellState::Player(1), CellState::Player(2)]
+                BoardRow(vec![
+                    CellState::Empty,
+                    CellState::Player(1),
+                    CellState::Player(2)
+                ])
             );
         }
 
@@ -317,6 +359,7 @@ mod tests {
                     CellState::Player(4),
                     CellState::Player(5)
                 ]
+                .into()
             );
         }
 
@@ -342,6 +385,7 @@ mod tests {
                     CellState::Player(7),
                     CellState::Player(8)
                 ]
+                .into()
             );
         }
 
@@ -360,7 +404,7 @@ mod tests {
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_row(43), vec![]);
+            assert_eq!(b.get_row(43), BoardRow(vec![]));
         }
     }
 
@@ -384,7 +428,11 @@ mod tests {
 
             assert_eq!(
                 b.get_column(0),
-                vec![CellState::Empty, CellState::Player(3), CellState::Player(6)]
+                BoardColumn(vec![
+                    CellState::Empty,
+                    CellState::Player(3),
+                    CellState::Player(6)
+                ])
             );
         }
 
@@ -405,11 +453,11 @@ mod tests {
 
             assert_eq!(
                 b.get_column(1),
-                vec![
+                BoardColumn(vec![
                     CellState::Player(1),
                     CellState::Player(4),
                     CellState::Player(7)
-                ]
+                ])
             );
         }
 
@@ -430,11 +478,11 @@ mod tests {
 
             assert_eq!(
                 b.get_column(2),
-                vec![
+                BoardColumn(vec![
                     CellState::Player(2),
                     CellState::Player(5),
                     CellState::Player(8)
-                ]
+                ])
             );
         }
 
@@ -453,7 +501,7 @@ mod tests {
             ];
             let b = Board { data, width: 3 };
 
-            assert_eq!(b.get_column(3), vec![]);
+            assert_eq!(b.get_column(3), BoardColumn(vec![]));
         }
     }
 
@@ -477,7 +525,11 @@ mod tests {
 
             assert_eq!(
                 b.get_diagonal(Diagonal::Major),
-                vec![CellState::Empty, CellState::Player(4), CellState::Player(8)]
+                BoardDiagonal(vec![
+                    CellState::Empty,
+                    CellState::Player(4),
+                    CellState::Player(8)
+                ])
             );
         }
 
@@ -498,11 +550,11 @@ mod tests {
 
             assert_eq!(
                 b.get_diagonal(Diagonal::Minor),
-                vec![
+                BoardDiagonal(vec![
                     CellState::Player(2),
                     CellState::Player(4),
                     CellState::Player(6)
-                ]
+                ])
             );
         }
     }
