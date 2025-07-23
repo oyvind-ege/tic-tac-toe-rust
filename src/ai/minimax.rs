@@ -84,7 +84,6 @@ impl AIMinimax {
         let winner = game_state.referee().adjudicate(board_to_analyze);
         if winner.is_some() || board_to_analyze.is_full() {
             if let Some(winning_piece) = winner {
-                // We can unwrap because we assume there is an AI player at this point
                 if winning_piece == ai_player_piece {
                     return WINNING_MOVE_SCORE - depth;
                 } else {
