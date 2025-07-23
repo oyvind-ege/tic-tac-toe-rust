@@ -95,27 +95,27 @@ impl AIMinimax {
 
         if is_maximizer {
             let mut best = i8::MIN;
-            let possible_board_states = self.get_possible_board_states_from_current_board(
+            let possible_moves = self.get_possible_board_states_from_current_board(
                 board_to_analyze,
                 CellState::Player(ai_player_piece),
             );
-            for board_state in possible_board_states {
-                let new_best = self.minimax(game_state, &board_state, depth + 1, false);
+            for new_board_state in possible_moves {
+                let new_best = self.minimax(game_state, &new_board_state, depth + 1, false);
 
                 best = cmp::max(best, new_best);
             }
             best
         } else {
             let mut best = i8::MAX;
-            let possible_board_states = self.get_possible_board_states_from_current_board(
+            let possible_moves = self.get_possible_board_states_from_current_board(
                 board_to_analyze,
                 CellState::Player(local_human_player_piece),
             );
 
-            for board_state in possible_board_states {
+            for new_board_state in possible_moves {
                 best = cmp::min(
                     best,
-                    self.minimax(game_state, &board_state, depth + 1, true),
+                    self.minimax(game_state, &new_board_state, depth + 1, true),
                 )
             }
             best
