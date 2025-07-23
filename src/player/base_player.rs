@@ -76,6 +76,7 @@ impl InputController for LocalPlayer {
         match input.to_lowercase().as_str() {
             "help" => Ok(InputType::Help),
             "exit" => Ok(InputType::Exit),
+            "restart" => Ok(InputType::Restart),
             val if val.parse::<usize>().is_ok() => {
                 let parsed_number = val.parse::<usize>().expect("Could not parse input value.");
 
@@ -95,7 +96,16 @@ impl PlayerController for LocalPlayer {
         println!("What do you want to do?");
         println!("Type a number from 0 to 8 to make your choice.");
         println!("Type 'help' for assistance on how to designate the board.");
+        println!("Type 'restart' to restart.");
         println!("Type 'exit' to quit.");
         self.parse_input(&self.get_raw_input(), game_state.board())
+    }
+
+    fn get_yes_no(&self) -> Result<bool, InputError> {
+        match self.get_raw_input().to_lowercase().as_str() {
+            "y" | "yes" => Ok(true),
+            "n" | "no" => Ok(false),
+            _ => Err(InputError::InvalidCommand),
+        }
     }
 }

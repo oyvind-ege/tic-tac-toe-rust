@@ -33,4 +33,5 @@ pub trait InputController {
 
 pub trait PlayerController {
     fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError>;
+    fn get_yes_no(&self) -> Result<bool, InputError>;
 }

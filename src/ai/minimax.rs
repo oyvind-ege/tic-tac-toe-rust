@@ -21,6 +21,9 @@ impl PlayerController for AIMinimax {
         let best_move = self.find_best_move(gamestate);
         Ok(InputType::Coord(best_move))
     }
+    fn get_yes_no(&self) -> Result<bool, InputError> {
+        Ok(true)
+    }
 }
 
 impl AIMinimax {

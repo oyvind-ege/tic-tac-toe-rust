@@ -7,6 +7,7 @@ pub struct GameState<'a> {
     board: Board,
     referee: GameReferee,
     exit_wanted: bool,
+    restart_wanted: bool,
     players: PlayerList<'a>,
 }
 
@@ -16,16 +17,17 @@ impl GameState<'_> {
             board: Board::new(),
             referee: GameReferee::default(),
             players: PlayerList::default(),
+            restart_wanted: false,
             exit_wanted: false,
         }
     }
 
-    pub fn board(&self) -> &Board {
-        &self.board
+    pub fn restart(&mut self) {
+        *self = GameState::new();
     }
 
-    pub fn board_mut(&mut self) -> &mut Board {
-        &mut self.board
+    pub fn board(&self) -> &Board {
+        &self.board
     }
 
     pub fn referee(&self) -> &GameReferee {
@@ -59,7 +61,10 @@ impl GameState<'_> {
                         self.exit_wanted = true;
                         break;
                     }
-                    Ok(_) => print!("Not implemented."),
+                    Ok(InputType::Restart) => {
+                        self.restart_wanted = true;
+                        break;
+                    }
                     Err(e) => {
                         println!("{e}");
                         // We want the player(s) to be able to rectify their choice and provide true input
@@ -70,15 +75,27 @@ impl GameState<'_> {
             if self.board.is_full() {
                 break;
             }
-            if self.exit_wanted {
+
+            if self.exit_wanted || self.restart_wanted {
                 break;
             }
         }
-        self.check_for_winner();
-        self.check_for_draw();
+
+        if self.restart_wanted {
+            self.restart();
+        }
+
+        if let Some(winner) = self.we_have_winner() {
+            println!("{winner} is the winner!");
+            self.board.render(self);
+            self.post_game_loop();
+        } else if self.board.is_full() {
+            println!("A draw.");
+            self.post_game_loop();
+        }
     }
 
-    fn check_for_winner(&mut self) {
+    fn we_have_winner(&mut self) -> Option<&str> {
         if let Some(winning_piece) = self.referee.adjudicate(&self.board) {
             let mut winner_name: &str = "";
             for p in self.players.iter() {
@@ -86,18 +103,31 @@ impl GameState<'_> {
                     winner_name = p.name;
                 }
             }
-            // TODO: Move responsibility for rendering the winner to a separate object
-            self.board.render(self);
-            println!("{winner_name} is the victor!");
-            self.exit_wanted = true;
+            Some(winner_name)
+        } else {
+            None
         }
     }
 
-    fn check_for_draw(&mut self) {
-        if self.board.is_full() {
-            //TODO: Remove rendering and state-setting from this function to make it "pure"
-            println!("A draw.");
-            self.exit_wanted = true;
+    fn post_game_loop(&mut self) {
+        'inputloop: loop {
+            println!("Would you like to restart? (Y/N)");
+            let choice = self
+                .players
+                .get_local_human_player()
+                .controller
+                .get_yes_no();
+            match choice {
+                Ok(true) => {
+                    self.restart();
+                    break;
+                }
+                Ok(false) => {
+                    self.exit_wanted = true;
+                    break;
+                }
+                _ => continue 'inputloop,
+            }
         }
     }
 }
