@@ -11,14 +11,6 @@ pub struct PlayerListIterator<'a> {
     index: usize,
 }
 
-/// This struct represents configuration information on the players.
-/// It is currently separate from the PlayerList, which is unfortunate.
-// TODO: Merge/redo this with PlayerList
-pub struct PlayersInfo {
-    pub ai_piece: PlayerPiece,
-    pub player_piece: PlayerPiece,
-}
-
 // I am doing this primarily for fun and learning, and so I can iterate over players
 impl<'a> Iterator for PlayerListIterator<'a> {
     type Item = &'a Player<'a>;
@@ -52,42 +44,40 @@ impl<'a> Default for PlayerList<'a> {
 }
 
 impl<'a> PlayerList<'a> {
-    pub fn get_piece_of_player_type(&self, player_type: PlayerType) -> PlayerPiece {
-        if self.player_1.player_type() == player_type {
-            self.player_1.player_piece
-        } else if self.player_2.player_type() == player_type {
-            self.player_2.player_piece
+    pub fn get_ai_player(&self) -> Option<&Player> {
+        let ai_players = self.iter().filter(|p| p.is_ai()).collect::<Vec<&Player>>();
+
+        if ai_players.is_empty() {
+            None
         } else {
-            panic!("Attempted to get a player piece from a player_type that does not exist.");
+            Some(
+                ai_players
+                    .first()
+                    .expect("Unrecoverable error. AI Player exists but can't be found."),
+            )
         }
     }
 
-    pub fn get_ai_player_piece(&self) -> PlayerPiece {
-        if self.player_1.player_type() == PlayerType::Local
-            || self.player_1.player_type() == PlayerType::Remote
-        {
-            self.player_2.player_piece
+    pub fn get_local_human_player(&self) -> &Player {
+        let local_player = self
+            .iter()
+            .filter(|p| p.is_local())
+            .collect::<Vec<&Player>>();
+
+        if local_player.is_empty() {
+            panic!("ehhhhh.")
         } else {
-            self.player_1.player_piece
+            local_player.first().unwrap()
         }
     }
 
-    pub fn get_players_piece_info(&self) -> PlayersInfo {
-        PlayersInfo {
-            ai_piece: self.get_ai_player_piece(),
-            player_piece: self.get_human_player_piece(),
-        }
+    pub fn get_ai_player_piece(&self) -> Option<PlayerPiece> {
+        self.get_ai_player().map(|p| p.player_piece)
     }
 
-    // Not DRY
-    pub fn get_human_player_piece(&self) -> PlayerPiece {
-        if self.player_1.player_type() == PlayerType::Local
-            || self.player_1.player_type() == PlayerType::Remote
-        {
-            self.player_1.player_piece
-        } else {
-            self.player_2.player_piece
-        }
+    // Can return multiple, since parts of the code theoretically supports multiplayer
+    pub fn get_local_human_player_piece(&self) -> PlayerPiece {
+        self.get_local_human_player().player_piece
     }
 
     pub fn iter(&self) -> PlayerListIterator {

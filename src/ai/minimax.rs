@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::board::*;
 use crate::controller::*;
-use crate::player::playerlist::*;
+use crate::player::base_player::PlayerPiece;
 use crate::GameState;
 
 pub struct AIMinimax {}
@@ -19,8 +19,7 @@ impl std::ops::Deref for BoardAfterMove {
 
 impl PlayerController for AIMinimax {
     fn handle_input(&self, gamestate: &GameState) -> Result<InputType, InputError> {
-        let players_info = gamestate.players().get_players_piece_info();
-        let best_move = self.find_best_move(gamestate, &players_info);
+        let best_move = self.find_best_move(gamestate);
         Ok(InputType::Coord(best_move))
     }
 }
@@ -30,7 +29,7 @@ impl AIMinimax {
         AIMinimax {}
     }
 
-    fn find_best_move(&self, game_state: &GameState, players_info: &PlayersInfo) -> usize {
+    fn find_best_move(&self, game_state: &GameState) -> usize {
         let possible_moves = game_state.board().get_indices_of_empty_cells();
         /*
         NOTE: We are at this point assuming the board is not full, quite simply due to the main game logic. See src/gamestate/mod.rs.
@@ -41,17 +40,20 @@ impl AIMinimax {
 
         let mut temporary_board = game_state.board().clone();
 
-        for &move_pos in &possible_moves {
-            temporary_board.modify_at_cell(move_pos, CellState::Player(players_info.ai_piece));
+        for &move_index in &possible_moves {
+            temporary_board.modify_at_cell(
+                move_index,
+                CellState::Player(game_state.players().get_ai_player_piece().unwrap()),
+            );
 
-            let score = self.minimax(game_state, &temporary_board, players_info, 0, false);
+            let score = self.minimax(game_state, &temporary_board, 0, false);
 
             if score > best_score {
                 best_score = score;
-                best_move = move_pos;
+                best_move = move_index;
             }
             // Resetting the board so we don't have to clone multiple times.
-            temporary_board.modify_at_cell(move_pos, CellState::Empty);
+            temporary_board.modify_at_cell(move_index, CellState::Empty);
         }
 
         best_move
@@ -61,7 +63,6 @@ impl AIMinimax {
         &self,
         game_state: &GameState,
         board_to_analyze: &Board,
-        players_info: &PlayersInfo,
         depth: i8,
         is_maximizer: bool,
     ) -> i8 {
@@ -69,10 +70,14 @@ impl AIMinimax {
         const LOSING_MOVE_SCORE: i8 = -10;
         const DRAW_MOVE_SCORE: i8 = 0;
 
+        let ai_player_piece = game_state.players().get_ai_player_piece().unwrap();
+        let local_human_player_piece = game_state.players().get_local_human_player_piece();
+
         let winner = game_state.referee().adjudicate(board_to_analyze);
         if winner.is_some() || board_to_analyze.is_full() {
             if let Some(winning_piece) = winner {
-                if winning_piece == players_info.ai_piece {
+                // We can unwrap because we assume there is an AI player at this point
+                if winning_piece == ai_player_piece {
                     return WINNING_MOVE_SCORE - depth;
                 } else {
                     return LOSING_MOVE_SCORE + depth;
@@ -85,11 +90,10 @@ impl AIMinimax {
             let mut best = i8::MIN;
             let possible_board_states = self.get_possible_board_states_from_current_board(
                 board_to_analyze,
-                CellState::Player(players_info.ai_piece),
+                CellState::Player(ai_player_piece),
             );
             for board_state in possible_board_states {
-                let new_best =
-                    self.minimax(game_state, &board_state, players_info, depth + 1, false);
+                let new_best = self.minimax(game_state, &board_state, depth + 1, false);
 
                 best = cmp::max(best, new_best);
             }
@@ -98,13 +102,13 @@ impl AIMinimax {
             let mut best = i8::MAX;
             let possible_board_states = self.get_possible_board_states_from_current_board(
                 board_to_analyze,
-                CellState::Player(players_info.player_piece),
+                CellState::Player(local_human_player_piece),
             );
 
             for board_state in possible_board_states {
                 best = cmp::min(
                     best,
-                    self.minimax(game_state, &board_state, players_info, depth + 1, true),
+                    self.minimax(game_state, &board_state, depth + 1, true),
                 )
             }
             best

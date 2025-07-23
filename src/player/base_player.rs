@@ -6,6 +6,15 @@ use crate::GameState;
 use std::io;
 use synonym::Synonym;
 
+pub struct Player<'a> {
+    pub name: &'a str,
+    pub player_piece: PlayerPiece,
+    player_type: PlayerType,
+    pub controller: Box<dyn PlayerController>,
+}
+
+pub struct LocalPlayer {}
+
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum PlayerType {
     Local,
@@ -30,15 +39,6 @@ impl std::ops::Deref for PlayerPiece {
     }
 }
 
-pub struct Player<'a> {
-    pub name: &'a str,
-    pub player_piece: PlayerPiece,
-    player_type: PlayerType,
-    pub controller: Box<dyn PlayerController>,
-}
-
-pub struct LocalPlayer {}
-
 impl<'a> Player<'a> {
     pub fn new(name: &'a str, player_piece: PlayerPiece, player_type: PlayerType) -> Player<'a> {
         Player {
@@ -56,8 +56,12 @@ impl<'a> Player<'a> {
         }
     }
 
-    pub fn player_type(&self) -> PlayerType {
-        self.player_type
+    pub fn is_ai(&self) -> bool {
+        self.player_type != PlayerType::Local && self.player_type != PlayerType::Remote
+    }
+
+    pub fn is_local(&self) -> bool {
+        self.player_type == PlayerType::Local
     }
 }
 
