@@ -44,6 +44,7 @@ impl<'a> Default for PlayerList<'a> {
 }
 
 impl<'a> PlayerList<'a> {
+    /// This is currently wrapped in an Option, to reflect the potential for multiplayer in the future
     pub fn get_ai_player(&self) -> Option<&Player> {
         let ai_players = self.iter().filter(|p| p.is_ai()).collect::<Vec<&Player>>();
 
@@ -65,7 +66,9 @@ impl<'a> PlayerList<'a> {
             .collect::<Vec<&Player>>();
 
         if local_player.is_empty() {
-            panic!("ehhhhh.")
+            panic!(
+                "Well. That's awkward. No local human player found, which should not be possible."
+            )
         } else {
             local_player.first().unwrap()
         }
@@ -75,7 +78,7 @@ impl<'a> PlayerList<'a> {
         self.get_ai_player().map(|p| p.player_piece)
     }
 
-    // Can return multiple, since parts of the code theoretically supports multiplayer
+    /// Returns the local human player's piece. This is assumed to always exist.
     pub fn get_local_human_player_piece(&self) -> PlayerPiece {
         self.get_local_human_player().player_piece
     }

@@ -2,12 +2,11 @@ use std::cmp;
 
 use crate::board::*;
 use crate::controller::*;
-use crate::player::base_player::PlayerPiece;
 use crate::GameState;
 
 pub struct AIMinimax {}
 
-/// Represents a Board State and the Move that made it possible
+/// Represents a Board State and the index of the move that made it possible
 struct BoardAfterMove((Board, usize));
 
 impl std::ops::Deref for BoardAfterMove {
@@ -29,6 +28,13 @@ impl AIMinimax {
         AIMinimax {}
     }
 
+    /// This is the entry point for the minimax algorithm.
+    ///
+    /// Find best move initiates a sequence of minimax searches down through a tree-graph of possible game states, from the current game state.
+    ///
+    /// For each such possible search through the gamestate tree, the algorithm will eventually yield a "score" for this given move. This score is calculated when the minimax algorithm reaches a leaf node/terminal node. A victory for the AI will represent a very high score of 10; a draw is scored as 0, and a loss (to the human player) represents a -10. In addition, we subtract the "depth" of the tree from this score, so that a winning move that is 4 steps away is scored as 6, whereas a winning move this very turn is scored as a 10. That way, the AI will prioritze the quickest path to victory.
+    ///
+    /// The job of the algorithm (and this function) is to return the move that will in the quickest way possible lead to the highest score
     fn find_best_move(&self, game_state: &GameState) -> usize {
         let possible_moves = game_state.board().get_indices_of_empty_cells();
         /*
@@ -40,6 +46,7 @@ impl AIMinimax {
 
         let mut temporary_board = game_state.board().clone();
 
+        // The idea here is to temporarily modify a board, perform the minimax calculation, then "reset" that board. In that way, we can repeatedly use the same temporary_board and not clone clone clone.
         for &move_index in &possible_moves {
             temporary_board.modify_at_cell(
                 move_index,
@@ -70,6 +77,7 @@ impl AIMinimax {
         const LOSING_MOVE_SCORE: i8 = -10;
         const DRAW_MOVE_SCORE: i8 = 0;
 
+        // NOTE: We unwrap because we strongly assume that there is an AI piece at this point
         let ai_player_piece = game_state.players().get_ai_player_piece().unwrap();
         let local_human_player_piece = game_state.players().get_local_human_player_piece();
 
